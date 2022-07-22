@@ -34,11 +34,12 @@ public class JobClass {
 	/* Open class type */
 	public static final int OPEN_CLASS = 1;
 
-	//class type
+	//class type (open or close)
 	private int type;
 	//class priority
 	private int priority;
 
+	//Reference station (who generate the job)
 	private String referenceNodeName;
 
 	//----------------------CONSTRUCTORS---------------------------///

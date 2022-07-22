@@ -59,16 +59,39 @@ public class RandomSource extends InputSection {
 	 * Creates a new instance of RandomSource.
 	 * strategies[i] = null, if the i-th class is closed.
 	 */
+
+	// 初始化一个RandomSource节点，通过数组 指定每个class 的 serviceStrategy
+	// <parameter array="true" classPath="jmt.engine.NetStrategies.ServiceStrategy" name="ServiceStrategy">
+	// 创建serviceStrategy时，提供相应的构造函数的参数 `public ServiceTimeStrategy(Distribution distribution, Parameter parameter)`
+
+	/**
+	 *  <subParameter classPath="jmt.engine.NetStrategies.ServiceStrategies.ServiceTimeStrategy" name="ServiceTimeStrategy">
+ *         <subParameter classPath="jmt.engine.random.Exponential" name="Exponential"/>
+ *         <subParameter classPath="jmt.engine.random.ExponentialPar" name="distrPar">
+ *             <subParameter classPath="java.lang.Double" name="lambda">
+ *                 <value>0.5</value>
+ *             </subParameter>
+ *         </subParameter>
+	 *  </subParameter>
+	 * @param strategies
+	 */
+
 	public RandomSource(ServiceStrategy[] strategies) {
 		this.strategies = strategies;
 		waitingJobs = new LinkedList<Job>();
 		coolStart = true;
 	}
 
+	//函数调用在 NodeSection.setOwnerNode(ownerNode); ===>  NetNode.inputSection.setOwnerNode(this);
+	//相当于这个对象的 initialize() 函数。
 	@Override
 	protected void nodeLinked(NetNode node) throws NetException {
 		// Sets netnode dependent properties
+
+		// 从该NodeSection的主节点处获取JobClasses。
 		jobClasses = getJobClasses();
+
+		// 获取指定节点的JobList
 		nodeJobsList = node.getJobInfoList();
 	}
 
@@ -80,7 +103,7 @@ public class RandomSource extends InputSection {
 
 		switch (message.getEvent()) {
 
-		case NetEvent.EVENT_START:
+		case NetEvent.EVENT_START: // 事件开始
 
 			//case EVENT_START:
 			//the random source creates all the jobs requested by each class.
@@ -88,6 +111,9 @@ public class RandomSource extends InputSection {
 			//departure of the job, calculated using the strategy of the corresponding class
 
 			netJobsList = getOwnerNode().getQueueNet().getJobInfoList();
+
+			// 遍历该节点的jobClass，如果有，判断class类型（open or close）
+			// 即对 jobClass 中的每一个class创建一个实例。
 			ListIterator<JobClass> it = jobClasses.listIterator();
 			while (it.hasNext()) {
 				JobClass jobClass = it.next();
@@ -96,14 +122,19 @@ public class RandomSource extends InputSection {
 					continue;
 				}
 
+				// 获取jobClass 的 Id
 				c = jobClass.getId();
 				// Calculates the delay of departure (1/lambda)
+
+				// 如果 策略组中有对应的jobClass， 则初始化一个该jobClass的实例，即：Class
 				if (strategies[c] != null) {
 					job = new Job(jobClass, netJobsList);
-                    			job.initialize(this.getNetSystem());
+					job.initialize(this.getNetSystem());
 					updateVisitPath(job);
+
+					// 执行该策略组的等待策略（serviceTime策略，按概率分布产生事件），进而产生以下一个job。
 					delay = strategies[c].wait(this, jobClass);
-					sendMe(job, delay);
+					sendMe(job, delay);		// 发出 NetEvent.EVENT_JOB，信号。
 				}
 			}
 			break;
@@ -121,7 +152,7 @@ public class RandomSource extends InputSection {
 			job = message.getJob();
 			if (coolStart) {
 				// Gets the class of the job
-				c = job.getJobClass().getId();
+				c = job.getJobClass().getId(); // 获取jobClass 的 Id
 
 				//no control is made on the number of jobs created
 				//it is an open class
@@ -140,12 +171,16 @@ public class RandomSource extends InputSection {
 				// Signals to global jobInfoList new added job
 				netJobsList.addJob(job);
 
+				// 发出 NodeSection.SERVICE 信号。
 				sendForward(job, 0.0);
 
+				// 创建下一个 job 对象。
 				// Create a new job and send it to me delayed
 				job = new Job(job.getJobClass(), netJobsList);
                 job.initialize(this.getNetSystem());
 				updateVisitPath(job);
+
+				// 同样执行等待策略。
 				delay = strategies[c].wait(this, job.getJobClass());
 				sendMe(job, delay);
 

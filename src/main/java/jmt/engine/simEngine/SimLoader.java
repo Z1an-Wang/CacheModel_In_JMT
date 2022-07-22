@@ -152,7 +152,7 @@ public class SimLoader {
 			if (DEBUG) {
 				System.out.println(" created document");
 			}
-			//gets root
+			//gets root - node name = 'sim'
 			Element root = document.getDocumentElement();
 			if (DEBUG) {
 				System.out.println("root = " + root.getAttribute("name"));
@@ -246,7 +246,7 @@ public class SimLoader {
 			//gets the default value of disableStatisticStop
 			boolean disableStatisticStop = simParam.isDisableStatisticStop();
 
-			// Gets the timestamp value
+			// Gets the timestamp value - logtimestampvalue
 			simParam.setTimestampValue(Long.toString(System.currentTimeMillis()));
 
 			//-------------- end SIM PARAMETERS -------------------//
@@ -540,6 +540,7 @@ public class SimLoader {
 	 * @param section  dom description of the nodeName section.
 	 * @return NodeSection created.
 	 */
+	// 输入是一个section，遍历section中的每一个parameter节点，创建对应的object，来作为这个section的构造函数的参数。
 	private NodeSection createSection(Element section) throws LoadException {
 		//gets all the parameters
 		NodeList parameterList = section.getElementsByTagName("parameter");
@@ -565,6 +566,7 @@ public class SimLoader {
 					//if (DEBUG) {
 					//	System.out.println("parameterList.item(i): " + parameterList.item(i).toString());
 					//}
+					// 创建parameter对应的object，
 					initargs[i] = createParameter((Element) parameterList.item(i));
 					if (initargs[i] != null) {
 						//gets the class of the parameter

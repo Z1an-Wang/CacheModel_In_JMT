@@ -65,7 +65,7 @@ public class Job implements Cloneable {
 	/**
 	 * Creates a new instance of Job.
 	 * @param jobClass Reference to the class of the job.
-	 * @param netJobsList Reference to the global jobInfoList.
+	 * @param globalJobInfoList Reference to the global jobInfoList.
 	 */
 	public Job(JobClass jobClass, GlobalJobInfoList globalJobInfoList) {
 		//this.Id = counter++;

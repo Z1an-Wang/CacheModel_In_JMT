@@ -46,6 +46,7 @@ public class JobSink extends InputSection {
 	/**
 	 * Default Constructor creates the JobSink that can be used only as Input Section.
 	 */
+	// JobSink section的初始化不需要额外参数。
 	public JobSink() {
 	}
 
@@ -78,14 +79,17 @@ public class JobSink extends InputSection {
 
 			Job job = message.getJob();
 
+			// 发出任务完成信号。
 			send(NetEvent.EVENT_ACK, job, 0.0, message.getSourceSection(), message.getSource());
 
+			// 在 NodeSection 的 JobsList 中，查找该job，并删除。
 			JobInfo jobInfo = jobsList.lookFor(job);
 			if (jobInfo != null) {
 				//removes job from the jobInfoList of the section
 				jobsList.removeJob(jobInfo);
 			}
 
+			// 在 jobsList_node 中，查找该job，并删除。
 			JobInfo jobInfo_node = jobsList_node.lookFor(job);
 			if (jobInfo_node != null) {
 				//removes job from the jobInfoList of the node
