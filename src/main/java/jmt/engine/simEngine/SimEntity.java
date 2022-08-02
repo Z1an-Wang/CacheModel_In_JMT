@@ -34,19 +34,35 @@ import jmt.common.exception.NetException;
  */
 
 public abstract class SimEntity {
-	// Private data members
-	public String name; // The entities name
+	// Data field
 	private int me; // Unique id
-	public SimEvent evbuf; // For incoming events
-	protected int state; // Our current state from list below
 	private SimPredicate waitingPred; //the predicate that the SimWaitFor is waiting
+	protected int state; // Our current state from list below
 	protected SimSystem simSystem;
+	public String name; // The entities name
+	public SimEvent evbuf; // For incoming events
 
-	//
-	// Public library interface
-	//
+	// The states
+	/**
+	 * State RUNNING: the entity can be run by the simulation
+	 */
+	protected static final int RUNNABLE = 0;
 
-	// Public constructor
+	/**
+	 *  State WAITING: the entity is waiting for an event.
+	 */
+	protected static final int WAITING = 1;
+
+	/**
+	 * State HOLDING: the entity has been caused to wait for a specified number of units of simulation time.
+	 */
+	protected static final int HOLDING = 2;
+
+	/**
+	 * State FINISHED: the entity has finished its behaviour.
+	 */
+	protected static final int FINISHED = 3;
+
 	/** The standard constructor.
 	 * @param name The name to be associated with this entity
 	 */
@@ -57,6 +73,45 @@ public abstract class SimEntity {
 		//this.simSystem = simSystem;
 		// Adding this to SimSystem automatically
 		//simSystem.add(this);
+	}
+
+	// all the abstract method
+	// The body function which should be overridden
+	/** The method which defines the behaviour of the entity. This method
+	 * should be overridden in subclasses of SimEntity.
+	 */
+	protected abstract void body();
+
+	/**
+	 * Starts the activity of the SimEntity, call it the first time before
+	 * calling execute.
+	 */
+	public abstract void start();
+
+	// Package update methods
+	/**
+	 * Restarts the entity after an hold period
+	 */
+	public abstract void restart();
+
+	/**
+	 * runs the activity of this SimEntiy remember that at the end of the action
+	 * the SimEntiy must be waiting holding or not exiting. otherwise the
+	 * simulation will be interrupted (read aborted).
+	 */
+	final void execute() throws NetException {
+		body();
+		exit();
+	}
+
+	/**
+	 * check that the body of Entity is closed correctly
+	 */
+	private void exit() throws NetException {
+		if (state == SimEntity.RUNNABLE) {
+			throw new NetException("The Body of entity " + getName() + " ended incorrectly. "
+					+ "The status at the end of the body must be waiting or holding.");
+		}
 	}
 	
 	public void setSimSystem(SimSystem simSystem){
@@ -76,22 +131,6 @@ public abstract class SimEntity {
 	 */
 	public int getId() {
 		return me;
-	}
-
-	// The body function which should be overridden
-	/** The method which defines the behaviour of the entity. This method
-	 * should be overridden in subclasses of SimEntity.
-	 */
-	protected abstract void body();
-
-	/**
-	 * check that the body of Entity is closed correctly
-	 */
-	private void exit() throws NetException {
-		if (state == SimEntity.RUNNABLE) {
-			throw new NetException("The Body of entity " + getName() + " ended incorrectly. "
-					+ "The status at the end of the body must be waiting or holding.");
-		}
 	}
 
 	// Runtime methods
@@ -268,34 +307,6 @@ public abstract class SimEntity {
 		return evbuf;
 	}
 
-	// The states
-
-	/**
-	 * State RUNNING: the entity can be run by the simulation
-	 */
-	protected static final int RUNNABLE = 0;
-
-	/**
-	 *  State WAITING: the entity is waiting for an event.
-	 */
-	protected static final int WAITING = 1;
-
-	/**
-	 * State HOLDING: the entity has been caused to wait for a specified number of units of simulation time.
-	 */
-	protected static final int HOLDING = 2;
-
-	/**
-	 * State FINISHED: the entity has finished its behaviour.
-	 */
-	protected static final int FINISHED = 3;
-
-	// Package update methods
-	/**
-	 * Restarts the entity after an hold period
-	 */
-	public abstract void restart();
-
 	final void setState(int state) {
 		this.state = state;
 	}
@@ -316,27 +327,11 @@ public abstract class SimEntity {
 	}
 
 	/**
-	 * Starts the activity of the SimEntity, call it the first time before
-	 * calling execute.
-	 */
-	public abstract void start();
-
-	/**
 	 * Returns the Predicate which this entity is waiting for
 	 * @return
 	 */
 	public final SimPredicate getWaitingPred() {
 		return waitingPred;
-	}
-
-	/**
-	 * runs the activity of this SimEntiy remember that at the end of the action
-	 * the SimEntiy must be waiting holding or not exiting. otherwise the
-	 * simulation will be interrupted (read aborted).
-	 */
-	final void execute() throws NetException {
-		body();
-		exit();
 	}
 
 }

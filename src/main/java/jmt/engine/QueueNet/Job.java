@@ -30,18 +30,24 @@ public class Job implements Cloneable {
 
 	//counter used to generate id
 	//private int counter;
-	//job ID
+	//job ID, assign this at the job initialization by calling netSystem.nextjobNumber();
+	// jobCounter in netSystem to manage the number of the jobs in global.
 	private int Id;
 
+	// update service time in the section and strategies parts.
+	private double serviceTime = -1.0;
 	private double serviceArrivalTime;
+	//used to compute system response time, call this method at the job initialization
+	protected double systemEnteringTime;
+
 	private boolean jobIsInService;
 	private boolean isPreemptedJob;
 	private RemoveToken servingMessage;
 
 	//class of this job
 	private JobClass jobClass;
-	//used to compute system response time
-	protected double systemEnteringTime;
+
+	private NetSystem netSystem;
 
 	/*
 	This field is used with blocking region.
@@ -54,10 +60,6 @@ public class Job implements Cloneable {
 
 	//the original destination of the job message
 	private NetNode originalDestinationNode = null;
-
-	private double serviceTime = -1.0;
-	
-    private NetSystem netSystem;
 
 	protected GlobalJobInfoList globalJobInfoList = null;
 	protected Pair<NetNode, JobClass> lastVisitedPair = null;
@@ -77,6 +79,12 @@ public class Job implements Cloneable {
 		jobIsInService = false;
 	}
 
+	public void initialize(NetSystem netSystem){
+		this.netSystem = netSystem;
+		// Job Id is used only for logging
+		this.Id = netSystem.nextjobNumber();
+		resetSystemEnteringTime();
+	}
 	/**
 	 * Resets the counter of Job.
 	 */
@@ -221,13 +229,6 @@ public class Job implements Cloneable {
 
 	public void setServingMessage(RemoveToken servingMessage) {
 		this.servingMessage = servingMessage;
-	}
-	
-	public void initialize(NetSystem netSystem){
-		this.netSystem = netSystem;
-		// Job Id is used only for logging
-		this.Id = netSystem.nextjobNumber();
-		resetSystemEnteringTime();
 	}
 	
 	public void resetSystemEnteringTime() {

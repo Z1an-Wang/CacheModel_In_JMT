@@ -14,7 +14,7 @@ public class LRUCache extends CacheStrategy{
 
 	@Override
 	public CacheItem getRemoveItem(LinkedList<CacheItem> caches) {
-		int lastAccessTime = 999999999;
+		int lastAccessTime = Integer.MIN_VALUE;
 		int index = -1;
 		for(int i=0; i<=caches.size(); i++){
 			int temp = caches.get(i).getAccessTimes();

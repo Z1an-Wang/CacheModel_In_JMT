@@ -540,7 +540,8 @@ public class SimLoader {
 	 * @param section  dom description of the nodeName section.
 	 * @return NodeSection created.
 	 */
-	// 输入是一个section，遍历section中的每一个parameter节点，创建对应的object，来作为这个section的构造函数的参数。
+	// section Element represents the content enclosed by the <Section> tag
+	// traverse each parameter node in section，creating the object as the input of the section constructor
 	private NodeSection createSection(Element section) throws LoadException {
 		//gets all the parameters
 		NodeList parameterList = section.getElementsByTagName("parameter");
@@ -562,11 +563,10 @@ public class SimLoader {
 				Object[] initargs = new Object[parameterList.getLength()];
 				Class<?>[] parameterTypes = new Class[parameterList.getLength()];
 				for (int i = 0; i < parameterList.getLength(); i++) {
-					//creates the parameter
 					//if (DEBUG) {
 					//	System.out.println("parameterList.item(i): " + parameterList.item(i).toString());
 					//}
-					// 创建parameter对应的object，
+					// create objects specified by classpath in <parameter>
 					initargs[i] = createParameter((Element) parameterList.item(i));
 					if (initargs[i] != null) {
 						//gets the class of the parameter

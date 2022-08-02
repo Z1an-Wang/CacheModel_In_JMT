@@ -124,6 +124,10 @@ public class NetNode extends SimEntity {
 		stopped = false;
 	}
 
+
+	/***************************************************
+	 *		 Methods about initialize the NetNode	   *
+	 ***************************************************/
 	/**
 	 * Adds a section to the node.
 	 * @param section Reference to the section to be added.
@@ -169,28 +173,34 @@ public class NetNode extends SimEntity {
 	}
 
 	/**
-	 * Gets the JobInfoList of this node.
+	 * This method is called after all the sections are added.
+	 * @throws NetException
 	 */
-	public JobInfoList getJobInfoList() {
-		return jobsList;
+	public void initializeSections() throws NetException {
+		if (inputSection != null) {
+			inputSection.setOwnerNode(this);
+		}
+		if (serviceSection != null) {
+			serviceSection.setOwnerNode(this);
+		}
+		if (outputSection != null) {
+			outputSection.setOwnerNode(this);
+		}
 	}
 
-	/**
-	 * Gets input nodes.
-	 * @return Input nodes linked to this node.
-	 */
-	public NodeList getInputNodes() {
-		return InputNodes;
+	void setNetwork(QueueNetwork network) {
+		// Sets in this method queue network dependent properties
+		this.network = network;
+		// When a node is linked to a network, connections between nodes must
+		// have been already done!!!
+		jobsList = new LinkedJobInfoList(getJobClasses().size());
+		jobsList.setNetSystem(network.getNetSystem());
 	}
 
-	/**
-	 * Gets output nodes.
-	 * @return Output nodes linked to this node.
-	 */
-	public NodeList getOutputNodes() {
-		return OutputNodes;
-	}
 
+	/***************************************************
+	 *		 Methods about get jobsList property	   *
+	 ***************************************************/
 	/**
 	 * Gets an integer type property related to this node.
 	 * @param Id Property identifier.
@@ -292,37 +302,6 @@ public class NetNode extends SimEntity {
 	}
 
 	/**
-	 * Gets a section of the node.
-	 * @param Id Section identifier (constants defined in NodeSection).
-	 * @return Node section.
-	 * @throws NetException
-	 */
-	public NodeSection getSection(int Id) throws NetException {
-		switch (Id) {
-		case NodeSection.INPUT:
-			return inputSection;
-		case NodeSection.SERVICE:
-			return serviceSection;
-		case NodeSection.OUTPUT:
-			return outputSection;
-		default:
-			throw new NetException(this, EXCEPTION_PROPERTY_NOT_AVAILABLE, "required section is not available.");
-		}
-	}
-
-	/**
-	 * Gets the Network owner of this node.
-	 * @return Value of property Network.
-	 */
-	public QueueNetwork getQueueNet() {
-		return network;
-	}
-
-	public GlobalJobInfoList getGlobalJobInfoList() {
-		return network.getJobInfoList();
-	}
-
-	/**
 	 * Analyzes a measure in the node.
 	 * @param measureName name of the measure to be activated.
 	 * @param jobClass Job class to be analyzed.
@@ -372,18 +351,10 @@ public class NetNode extends SimEntity {
 		}
 	}
 
-	public boolean isRunning() {
-		return (state != SimEntity.FINISHED);
-	}
 
-	/**
-	 * Gets the list of the job classes of the owner queue network.
-	 * @return Queue network job classes.
-	 */
-	public JobClassList getJobClasses() {
-		return network.getJobClasses();
-	}
-
+	/***************************************************
+	 *	   Methods about msg and jobinfo processing	   *
+	 ***************************************************/
 	/**
 	 * Gets the first NetMessage in the queue which validates a specific
 	 * predicate.
@@ -433,7 +404,7 @@ public class NetNode extends SimEntity {
 		message.setDestinationSection((byte) section);
 
 		//set other properties
-		message.setData(receiveBuffer.getData());
+		message.setData(receiveBuffer.getData());		// it maybe a Job
 		message.setTime(receiveBuffer.eventTime());
 		message.setSource(getNetSystem().getNode(receiveBuffer.getSrc()));
 		message.setDestination(getNetSystem().getNode(receiveBuffer.getDest()));
@@ -444,6 +415,7 @@ public class NetNode extends SimEntity {
 		Job job = message.getJob();
 		switch(event) {
 			case NetEvent.EVENT_JOB:
+			// if from other nodes or from node itself - Output section to Input section
 			if ((message.getSource() != this) || ((message.getSource() == this)
 					&& (message.getSourceSection() == NodeSection.OUTPUT && message.getDestinationSection() == NodeSection.INPUT))) {
 				inputSection.updateVisitPath(job);
@@ -469,6 +441,8 @@ public class NetNode extends SimEntity {
 	public final void body() {
 		message = new NetMessage();
 		try {
+			// when `SimSystem` process SimEvent.SEND event, set the event buffer and state of
+			// the destination node and call `destEnt.execute()` -> `body()` override in NetNode.
 			receiveBuffer = getEvbuf();
 
 			//receive a new message
@@ -482,6 +456,8 @@ public class NetNode extends SimEntity {
 			}
 
 			//process last event
+			// when `start()` this node, it will put a Max_Value delay event to the event queue,
+			// once this event reached, all the other event has been processed.
 			if (eventType == NetEvent.EVENT_KEEP_AWAKE) {
 				poison();
 			}
@@ -740,17 +716,11 @@ public class NetNode extends SimEntity {
 		}
 	}
 
-	void setNetwork(QueueNetwork network) {
-		// Sets in this method queue network dependent properties
-		this.network = network;
-		// When a node is linked to a network, connections between nodes must
-		// have been already done!!!
-		jobsList = new LinkedJobInfoList(getJobClasses().size());
-        jobsList.setNetSystem(network.getNetSystem()); 
-	}
-
 	@Override
 	public void start() {
+		// The time delay is Max_Value, as long as there is an event in the queue, that event will be processed first.
+		// when start the simulation -> NetSystem.start() will send each node each section
+		// a `NetEvent.EVENT_START` signal with 0 delay.  [activate message chain]
 		simSchedule(getId(), Double.MAX_VALUE, NetEvent.EVENT_KEEP_AWAKE, null);
 		simGetNext(SimSystem.SIM_ANY);
 	}
@@ -827,6 +797,10 @@ public class NetNode extends SimEntity {
 		return simSchedule(destination.getId(), delay, tag, job);
 	}
 
+
+	/***************************************************
+	 *				 Getter and Setter				   *
+	 ***************************************************/
 	/**
 	 * Returns true if this NetNode is a sink. This is extremely useful as sinks does not have
 	 * service section and output section, causing a lot of null pointer exception in routing
@@ -838,6 +812,10 @@ public class NetNode extends SimEntity {
 		// WARNING: to avoid circular dependency and to speed up this method,
 		// input section instanceof JobSink is not checked
 		return (serviceSection == null && outputSection == null);
+	}
+
+	public boolean isRunning() {
+		return (state != SimEntity.FINISHED);
 	}
 
 	/**
@@ -876,19 +854,65 @@ public class NetNode extends SimEntity {
 	}
 
 	/**
-	 * This method is called after all the sections are added.
+	 * Gets the JobInfoList of this node.
+	 */
+	public JobInfoList getJobInfoList() {
+		return jobsList;
+	}
+
+	/**
+	 * Gets a section of the node.
+	 * @param Id Section identifier (constants defined in NodeSection).
+	 * @return Node section.
 	 * @throws NetException
 	 */
-	public void initializeSections() throws NetException {
-		if (inputSection != null) {
-			inputSection.setOwnerNode(this);
+	public NodeSection getSection(int Id) throws NetException {
+		switch (Id) {
+			case NodeSection.INPUT:
+				return inputSection;
+			case NodeSection.SERVICE:
+				return serviceSection;
+			case NodeSection.OUTPUT:
+				return outputSection;
+			default:
+				throw new NetException(this, EXCEPTION_PROPERTY_NOT_AVAILABLE, "required section is not available.");
 		}
-		if (serviceSection != null) {
-			serviceSection.setOwnerNode(this);
-		}
-		if (outputSection != null) {
-			outputSection.setOwnerNode(this);
-		}
+	}
+
+	/**
+	 * Gets input nodes.
+	 * @return Input nodes linked to this node.
+	 */
+	public NodeList getInputNodes() {
+		return InputNodes;
+	}
+
+	/**
+	 * Gets output nodes.
+	 * @return Output nodes linked to this node.
+	 */
+	public NodeList getOutputNodes() {
+		return OutputNodes;
+	}
+
+	/**
+	 * Gets the Network owner of this node.
+	 * @return Value of property Network.
+	 */
+	public QueueNetwork getQueueNet() {
+		return network;
+	}
+
+	/**
+	 * Gets the list of the job classes of the owner queue network.
+	 * @return Queue network job classes.
+	 */
+	public JobClassList getJobClasses() {
+		return network.getJobClasses();
+	}
+
+	public GlobalJobInfoList getGlobalJobInfoList() {
+		return network.getJobInfoList();
 	}
 
 	public NetSystem getNetSystem(){

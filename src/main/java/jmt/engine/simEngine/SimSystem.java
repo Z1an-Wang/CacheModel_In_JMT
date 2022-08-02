@@ -297,6 +297,9 @@ public class SimSystem {
 		return w;
 	}
 
+	// Extract the first event whose destination is `src` on the
+	// deferred queue, matched by the `predicate`. And then put it
+	// into the `src`'s event buffer
 	synchronized void select(int src, SimPredicate p) {
 		SimEvent ev = null;
 		boolean found = false;
@@ -319,6 +322,9 @@ public class SimSystem {
 		}
 	}
 
+	// Cancel the first event whose source is `src` on the
+	// future queue, matched by the `predicate`. Remove it and put it
+	// into the `src`'s event buffer
 	synchronized void cancel(int src, SimPredicate p) {
 		SimEvent ev = null;
 		boolean found = false;
@@ -349,7 +355,7 @@ public class SimSystem {
 	//
 	// Private internal methods
 	//
-
+	// When ticks run to the nearest event in future/timing queue, call this to process it.
 	private void processEvent(SimEvent e) throws NetException {
 		int dest, src;
 		SimEntity destEnt;
@@ -371,6 +377,7 @@ public class SimSystem {
 				throw new NetException("SimSystem: Error - attempt to send to a null entity");
 			} else {
 				destEnt = entities.get(dest);
+				//if the entity is WAITING for an event, check if there is a predicate.
 				if (destEnt.getState() == SimEntity.WAITING) {
 					SimPredicate p = destEnt.getWaitingPred();
 	
@@ -379,7 +386,7 @@ public class SimSystem {
 						destEnt.setEvbuf((SimEvent) e.clone());
 						destEnt.setState(SimEntity.RUNNABLE);
 						try {
-							destEnt.execute();
+							destEnt.execute();			// call `body()`  by `netNode`
 						} catch (NetException e1) {
 							abort();
 							throw e1;
