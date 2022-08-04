@@ -21,13 +21,11 @@ package jmt.engine.NodeSections;
 import jmt.common.exception.NetException;
 import jmt.engine.NetStrategies.CacheStrategy;
 import jmt.engine.QueueNet.*;
-import jmt.engine.random.discrete.FiniteDiscreteDistribute;
-import jmt.engine.random.discrete.ZipfDistribution;
+import jmt.engine.random.discrete.DiscreteDistribution;
 import jmt.engine.random.engine.RandomEngine;
+import jmt.engine.random.discrete.*;
 
-import java.util.Hashtable;
 import java.util.LinkedList;
-import java.util.Map;
 
 /**
  * This class implements a class switch.
@@ -48,18 +46,17 @@ public class Cache extends ServiceSection {
 	private LinkedList<CacheItem> caches;
 
 	private CacheStrategy replacePolicy;
-	private FiniteDiscreteDistribute popularity;
-	private int alpha;
+	private DiscreteDistribution popularity;
 
-	private JobInfoList nodeJobsList;
+	private JobInfoList node_JobsList;
+	// also have a field `section_JobsList` inherited from NodeSection.
 
 
-	public Cache(Integer maxItems, Integer cacheCapacity, CacheStrategy replacePolicy, FiniteDiscreteDistribute pop, Integer aplha){
+	public Cache(Integer maxItems, Integer cacheCapacity, CacheStrategy replacePolicy, DiscreteDistribution pop){
 		this.maxItems = maxItems;
 		this.cacheCapacity = cacheCapacity;
 		this.replacePolicy = replacePolicy;
 		this.popularity = pop;
-		this.alpha = aplha;
 	}
 
 	/**
@@ -71,16 +68,17 @@ public class Cache extends ServiceSection {
 	 */
 	@Override
 	protected void nodeLinked(NetNode ownerNode) throws NetException {
-		nodeJobsList = ownerNode.getJobInfoList();
+		node_JobsList = ownerNode.getJobInfoList();
+
 		items = new LinkedList<CacheItem>();
 		for(int i=0; i<maxItems; i++){
 			items.add(new CacheItem(i));
 		}
 		caches = new LinkedList<CacheItem>();
-		popularity.setSize(cacheCapacity);
-		if(popularity instanceof ZipfDistribution){
-			((ZipfDistribution) popularity).setAlpha(this.alpha);
-		}
+
+//		if(popularity instanceof ZipfDistribution){
+//			((ZipfDistribution) popularity)
+//		}
 	}
 
 	@Override
@@ -94,7 +92,7 @@ public class Cache extends ServiceSection {
 				Job job = message.getJob();
 				JobClass inClass = job.getJobClass();
 
-				int requsetId = popularity.nextInt();
+				int requsetId = ((Zipf)popularity).nextRand();
 				CacheItem targetItem = items.get(requsetId);
 
 
