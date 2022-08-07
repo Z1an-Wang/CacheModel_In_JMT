@@ -17,7 +17,7 @@ public class LRUCache extends CacheStrategy{
 		int lastAccessTime = Integer.MIN_VALUE;
 		int index = -1;
 		for(int i=0; i<=caches.size(); i++){
-			int temp = caches.get(i).getAccessTimes();
+			int temp = caches.get(i).getNumberOfAccess();
 			if( temp<lastAccessTime ){
 				lastAccessTime = temp;
 				index = i;

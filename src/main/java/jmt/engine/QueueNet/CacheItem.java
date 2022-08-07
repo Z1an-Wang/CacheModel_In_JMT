@@ -10,7 +10,7 @@ public class CacheItem {
 
 	private boolean isCached;
 
-	private int accessTimes;
+	private int numberOfAccess;
 
 	public CacheItem(int i) {
 		this.id = id;
@@ -48,11 +48,11 @@ public class CacheItem {
 		isCached = cached;
 	}
 
-	public int getAccessTimes() {
-		return accessTimes;
+	public int getNumberOfAccess() {
+		return numberOfAccess;
 	}
 
-	public void setAccessTimes(int accessTimes) {
-		this.accessTimes = accessTimes;
+	public void setNumberOfAccess(int numberOfAccess) {
+		this.numberOfAccess = numberOfAccess;
 	}
 }

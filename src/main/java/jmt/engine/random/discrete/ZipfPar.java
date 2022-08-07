@@ -24,12 +24,16 @@ public class ZipfPar extends AbstractParameter {
 		this(numberOfElements.intValue(), alpha.doubleValue());
 	}
 
+	public ZipfPar(Double alpha, Integer numberOfElements) throws IncorrectDistributionParameterException {
+		this(numberOfElements.intValue(), alpha.doubleValue());
+	}
+
 	@Override
 	public boolean check(){
 		return numberOfElements>0 && alpha>0;
 	}
 
-	public int getMax(){
+	public int getNumberOfElements(){
 		return numberOfElements;
 	}
 

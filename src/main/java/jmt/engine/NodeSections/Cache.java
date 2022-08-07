@@ -21,7 +21,6 @@ package jmt.engine.NodeSections;
 import jmt.common.exception.NetException;
 import jmt.engine.NetStrategies.CacheStrategy;
 import jmt.engine.QueueNet.*;
-import jmt.engine.random.discrete.DiscreteDistribution;
 import jmt.engine.random.engine.RandomEngine;
 import jmt.engine.random.discrete.*;
 
@@ -41,6 +40,9 @@ public class Cache extends ServiceSection {
 
 	private int maxItems;
 	private int cacheCapacity;
+
+	private JobClass hitClass;
+	private JobClass missClass;
 
 	private LinkedList<CacheItem> items;
 	private LinkedList<CacheItem> caches;
@@ -68,7 +70,11 @@ public class Cache extends ServiceSection {
 	 */
 	@Override
 	protected void nodeLinked(NetNode ownerNode) throws NetException {
+		System.out.println("Sucess.");
 		node_JobsList = ownerNode.getJobInfoList();
+		JobClassList jobClasses = getJobClasses();
+		this.hitClass = jobClasses.get(CACHE_HIT_CLASS);
+		this.missClass = jobClasses.get(CACHE_MISS_CLASS);
 
 		items = new LinkedList<CacheItem>();
 		for(int i=0; i<maxItems; i++){
@@ -90,20 +96,20 @@ public class Cache extends ServiceSection {
 
 			case NetEvent.EVENT_JOB:
 				Job job = message.getJob();
-				JobClass inClass = job.getJobClass();
+				JobClass originalClass = job.getJobClass();
 
 				int requsetId = ((Zipf)popularity).nextRand();
 				CacheItem targetItem = items.get(requsetId);
 
-
-				JobClass outclass = null;
+				JobInfo jobInfo = jobsList.lookFor(job);
+				jobsList.getInternalJobInfoList(originalClass).remove(jobInfo);
 
 				// if the items has already cached.
 				if (cacheContains(requsetId)) {
 					targetItem.setLastAccessTime(job.getNetSystem().getTime());
-					targetItem.setAccessTimes(targetItem.getAccessTimes() + 1);
-					outclass = getJobClassByName(CACHE_HIT_CLASS);
-					job.setJobClass(outclass);
+					targetItem.setNumberOfAccess(targetItem.getNumberOfAccess() + 1);
+					job.setJobClass(hitClass);
+					jobsList.getInternalJobInfoList(hitClass).add(jobInfo);
 				} else {
 					// else check if the cache is full, apply the replace policy
 					if (caches.size() == cacheCapacity) {
@@ -113,29 +119,24 @@ public class Cache extends ServiceSection {
 							if (caches.get(i).getId() == remove.getId()) {
 								caches.remove(i);
 								remove.setCached(false);
-								remove.setAccessTimes(0);
+								remove.setNumberOfAccess(0);
 							}
 						}
+					// else cache is not full, add this new items to cache.
 					}
 					targetItem.setFirstaccessTime(job.getNetSystem().getTime());
 					targetItem.setCached(true);
 					targetItem.setLastAccessTime(job.getNetSystem().getTime());
-					targetItem.setAccessTimes(targetItem.getAccessTimes() + 1);
+					targetItem.setNumberOfAccess(1);
 					caches.addLast(targetItem);
+					job.setJobClass(missClass);
+					jobsList.getInternalJobInfoList(missClass).add(jobInfo);
 				}
 
-
-				outclass = getJobClassByName(CACHE_MISS_CLASS);
-				job.setJobClass(outclass);
-
-				JobInfo jobInfo = jobsList.lookFor(job);
-				jobsList.getInternalJobInfoList(inClass).remove(jobInfo);
-				jobsList.getInternalJobInfoList(outclass).add(jobInfo);
-
-				if (!(job instanceof ForkJob)) {
-					GlobalJobInfoList global = getOwnerNode().getQueueNet().getJobInfoList();
-					global.performJobClassSwitch(inClass, outclass);
-				}
+//				if (!(job instanceof ForkJob)) {
+//					GlobalJobInfoList global = getOwnerNode().getQueueNet().getJobInfoList();
+//					global.performJobClassSwitch(inClass, outclass);
+//				}
 				sendForward(NetEvent.EVENT_JOB, job, 0.0);
 				sendBackward(NetEvent.EVENT_ACK, job, 0.0);
 				break;
