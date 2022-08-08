@@ -84,6 +84,22 @@ public class Zipf extends DiscreteDistribution {
 	}
 
 	@Override
+	public int getUpper() {
+		if(cached){
+			return numberOfElements;
+		}
+		return -1;
+	}
+
+	@Override
+	public int getlower() {
+		if(cached){
+			return 1;
+		}
+		return -1;
+	}
+
+	@Override
 	public int nextRand(){
 		// Use `cdf()` and upper/lower bound to calculate the next random variable.
 		return this.inverseTransformSampling(0, numberOfElements);

@@ -47,6 +47,22 @@ public class Uniform extends DiscreteDistribution {
 		return false;
 	}
 
+	@Override
+	public int getUpper() {
+		if(cached){
+			return max;
+		}
+		return -1;
+	}
+
+	@Override
+	public int getlower() {
+		if(cached){
+			return min;
+		}
+		return -1;
+	}
+
 	public boolean nextBoolean() {
 		return engine.raw() > 0.5;
 	}
@@ -66,7 +82,7 @@ public class Uniform extends DiscreteDistribution {
 	@Override
 	public double pmf(int x) {
 		if(cached){
-			if (x <= min || x >= max) {
+			if (x < min || x > max) {
 				return 0.0;  //if x is out of bound return 0
 			}
 			return 1.0 / (max - min + 1);
@@ -124,7 +140,7 @@ public class Uniform extends DiscreteDistribution {
 			UniformPar up = (UniformPar) p;
 			double min = (double) up.getMin();
 			double max = (double) up.getMax();
-			if (x <= min || x >= max) {
+			if (x < min || x > max) {
 				return 0.0;  //if x is out of bound return 0
 			}
 			return 1.0 / (max - min + 1);

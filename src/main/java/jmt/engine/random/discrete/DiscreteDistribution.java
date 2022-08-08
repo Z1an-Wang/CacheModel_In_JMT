@@ -10,6 +10,7 @@ public abstract class DiscreteDistribution extends AbstractDistribution{
 
 	/*
 	 This Class extends from `AbstractDistribution`, also has a field - RandomEngine and its corresponding setter.
+	 This function is invoked by `SimLoader`, if is is an instance of AbstractDistribution
 	 protected RandomEngine engine;
 	 public void setRandomEngine(RandomEngine engine) { this.engine = engine;}
 	*/
@@ -35,8 +36,10 @@ public abstract class DiscreteDistribution extends AbstractDistribution{
 	/**
 	 *	Sub-class must implement this method to update parameter.
 	 */
-	abstract boolean updatePar(Parameter p) throws IncorrectDistributionParameterException;
+	public abstract boolean updatePar(Parameter p) throws IncorrectDistributionParameterException;
 
+	public abstract int getUpper();
+	public abstract int getlower();
 
 	/**
 	 * 	Inverse transform sampling
@@ -54,6 +57,7 @@ public abstract class DiscreteDistribution extends AbstractDistribution{
 				this.CDFList = createdCDFList(lower, upper);
 				this.CDFListCalculated = true;
 			}
+			// should call `setRandomEngine()` first ,and engine.nextDouble() should not be null.
 			return binarySearch(lower, upper, engine.nextDouble(), this.CDFList);
 		}
 		return -1;

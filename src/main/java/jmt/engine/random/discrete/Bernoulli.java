@@ -20,8 +20,8 @@ public class Bernoulli extends DiscreteDistribution {
 		this.probability = p;
 		this.cached = true;
 	}
-	public Bernoulli(Integer p) throws IncorrectDistributionParameterException {
-		this(p.intValue());
+	public Bernoulli(Double p) throws IncorrectDistributionParameterException {
+		this(p.doubleValue());
 	}
 
 	public boolean updatePar(double p) throws IncorrectDistributionParameterException {
@@ -40,6 +40,16 @@ public class Bernoulli extends DiscreteDistribution {
 			return updatePar(((BernoulliPar) p).getProbability());
 		}
 		return false;
+	}
+
+	@Override
+	public int getUpper() {
+		return 1;
+	}
+
+	@Override
+	public int getlower() {
+		return 0;
 	}
 
 

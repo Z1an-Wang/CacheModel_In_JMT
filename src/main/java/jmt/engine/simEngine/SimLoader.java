@@ -629,6 +629,9 @@ public class SimLoader {
 			String classPath = param.getAttribute("classPath");
 			NodeList valueList = XMLParser.getElementsByTagName(param, "value");
 			//if value == null the object is a null pointer
+			// 	<parameter classPath="">
+			// 		<value>null</value>
+			// 	</parameter>
 			if (valueList.getLength() > 0 && valueList.item(0).getChildNodes().item(0).getNodeValue().equals("null")) {
 				if (DEBUG) {
 					System.out.println("        parameter null");
@@ -645,15 +648,21 @@ public class SimLoader {
 					System.out.println("        parameter is an array");
 				}
 				//check if there are child nodes in the array
+				// <parameter array="true"/>
 				if (!param.hasChildNodes()) {
 					if (DEBUG) {
 						System.out.println("        creates 0 size array");
 					}
 					return Array.newInstance(c, 0);//return a 0 element array
 				}
+
 				//there are 2 situations: the parameter is an array or a group of subparameters defined per class
 
 				//first situation: just an array without classes
+				//  <parameter array="true">
+				// 		<subparameter/>
+				// 		<subparameter/>
+				// 	</parameter>
 				Object[] arrayElements;
 				if (XMLParser.getElementsByTagName(param, "refClass").getLength() == 0) {
 					//gets list of first level subParameters
@@ -685,6 +694,10 @@ public class SimLoader {
 					}
 					//creates an array of Object that has enough element to store
 					//subParametes for each class.
+					//  <parameter array="true">
+					//  	<refClass>Class1</refClass>
+					// 		<subparameter/>
+					// 	</parameter>
 					arrayElements = new Object[jobClasses.length];
 					NodeList chiList = param.getChildNodes();
 					ArrayList<String> classVect = new ArrayList<String>();
@@ -729,6 +742,7 @@ public class SimLoader {
 				}
 			}
 			//check for default constructor
+			// <parameter/>
 			if (!param.hasChildNodes()) {
 				if (DEBUG) {
 					System.out.println("       created with default constructor");
@@ -737,6 +751,9 @@ public class SimLoader {
 			}
 
 			//check if it is a leaf node (it has a value & not subparameters)
+			// <parameter>
+			// 		<value>  <value/>
+			// <parameter>
 			if (valueList.getLength() > 0) {
 				String value = valueList.item(0).getFirstChild().getNodeValue();
 				if (DEBUG) {
@@ -752,6 +769,9 @@ public class SimLoader {
 				return constr.newInstance(initargs);
 			} else {
 				//leaf node but has subparameters
+				// <parameter>
+				// 		<subparameter/>
+				// <parameter>
 				NodeList childList = XMLParser.getElementsByTagName(param, "subParameter");
 				Object[] initargs = new Object[childList.getLength()];
 				if (DEBUG) {

@@ -59,6 +59,22 @@ public class Binomial extends DiscreteDistribution {
 		return false;
 	}
 
+	@Override
+	public int getUpper() {
+		if(cached){
+			return numberOfElements;
+		}
+		return -1;
+	}
+
+	@Override
+	public int getlower() {
+		if(cached){
+			return 0;
+		}
+		return -1;
+	}
+
 	/**
 	 *	Cause we can calculate each CDF through one iteration, override it.
 	 */
