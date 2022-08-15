@@ -75,6 +75,7 @@ public interface SimulationDefinition {
 	public static final String MEASURE_RS = "Retrial Orbit Size";
 	/**Code for number of busy servers measure */
 	//public static final String MEASURE_BS = "Number of Busy Servers";
+	public static final String MEASURE_CHR = "Cache Hit Rate";
 
 
 	/**Code for number of system retrial number measure*/

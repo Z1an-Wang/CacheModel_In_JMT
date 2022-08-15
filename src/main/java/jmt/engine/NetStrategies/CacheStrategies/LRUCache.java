@@ -2,9 +2,6 @@ package jmt.engine.NetStrategies.CacheStrategies;
 
 import jmt.engine.NetStrategies.CacheStrategy;
 import jmt.engine.QueueNet.CacheItem;
-import jmt.engine.QueueNet.Job;
-import jmt.engine.QueueNet.NetNode;
-import jmt.engine.random.engine.RandomEngine;
 
 import java.util.LinkedList;
 
@@ -16,7 +13,7 @@ public class LRUCache extends CacheStrategy{
 	public CacheItem getRemoveItem(LinkedList<CacheItem> caches) {
 		int lastAccessTime = Integer.MIN_VALUE;
 		int index = -1;
-		for(int i=0; i<=caches.size(); i++){
+		for(int i=0; i<caches.size(); i++){
 			int temp = caches.get(i).getNumberOfAccess();
 			if( temp<lastAccessTime ){
 				lastAccessTime = temp;

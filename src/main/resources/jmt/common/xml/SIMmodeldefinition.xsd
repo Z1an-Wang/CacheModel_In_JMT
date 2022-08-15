@@ -12,6 +12,8 @@
 						<xs:attribute name="priority" type="xs:string" use="required"/>
 						<xs:attribute name="referenceSource" type="xs:string" use="optional"/>
 						<xs:attribute name="customers" type="xs:string" use="optional"/>
+						<xs:attribute name="cacheMissClass" type="xs:string" use="optional"/>
+						<xs:attribute name="cacheHitClass" type="xs:string" use="optional"/>
 					</xs:complexType>
 				</xs:element>
 				<xs:element ref="node" maxOccurs="unbounded"/>
@@ -31,7 +33,7 @@
 											<xs:enumeration value="Infinity"/>
 											<xs:enumeration value="-Infinity"/>
 										</xs:restriction>
-									</xs:simpleType>	
+									</xs:simpleType>
 								</xs:union>
 							</xs:simpleType>
 						</xs:attribute>
@@ -48,7 +50,7 @@
 											<xs:enumeration value="Infinity"/>
 											<xs:enumeration value="-Infinity"/>
 										</xs:restriction>
-									</xs:simpleType>	
+									</xs:simpleType>
 								</xs:union>
 							</xs:simpleType>
 						</xs:attribute>

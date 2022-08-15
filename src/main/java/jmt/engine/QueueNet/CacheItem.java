@@ -1,8 +1,12 @@
 package jmt.engine.QueueNet;
 
+import java.util.LinkedList;
+
 public class CacheItem {
 
 	private int id;
+
+	private LinkedList<Double> accessTimes;
 
 	private double firstaccessTime;
 
@@ -12,7 +16,8 @@ public class CacheItem {
 
 	private int numberOfAccess;
 
-	public CacheItem(int i) {
+	public CacheItem(int id) {
+		this.accessTimes = new LinkedList<Double>();
 		this.id = id;
 	}
 

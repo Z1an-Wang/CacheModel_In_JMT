@@ -2,10 +2,6 @@ package jmt.engine.NetStrategies.CacheStrategies;
 
 import jmt.engine.NetStrategies.CacheStrategy;
 import jmt.engine.QueueNet.CacheItem;
-import jmt.engine.QueueNet.Job;
-import jmt.engine.QueueNet.JobClass;
-import jmt.engine.QueueNet.NetNode;
-import jmt.engine.random.engine.RandomEngine;
 
 import java.util.LinkedList;
 
@@ -15,7 +11,7 @@ public class RandomCache extends CacheStrategy {
 
 	@Override
 	public CacheItem getRemoveItem(LinkedList<CacheItem> caches) {
-		return caches.get(new java.util.Random().nextInt(caches.size()));
+		return caches.get((int)Math.floor(engine.raw() * caches.size()));
 	}
 
 //	@Override

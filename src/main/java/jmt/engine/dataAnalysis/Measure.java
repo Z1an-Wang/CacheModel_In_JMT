@@ -224,6 +224,9 @@ public class Measure {
 	 * Sets output object.
 	 * @param output output object.
 	 */
+	// When the initialize the simulation, add each measure to the queueNetwork,
+	// if the <measure verbose="true"> verbose attribute set true, it will create an `MeasureOutput`
+	// object, that can be XML, cvs... format. And will setOutput to that object.
 	void setOutput(MeasureOutput output) {
 		this.output = output;
 	}
@@ -368,6 +371,7 @@ public class Measure {
 		NetSystem netSystem = getNetSystem();
 		simulationTime = netSystem.getTime();
 
+		// `addSample` return true if the computation of confidence interval has finished
 		if (analyzer.addSample(sample, weight)) {
 			//data analysis finished
 			if (!finish) {

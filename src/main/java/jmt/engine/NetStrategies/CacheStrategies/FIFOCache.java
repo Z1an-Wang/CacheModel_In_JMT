@@ -2,9 +2,6 @@ package jmt.engine.NetStrategies.CacheStrategies;
 
 import jmt.engine.NetStrategies.CacheStrategy;
 import jmt.engine.QueueNet.CacheItem;
-import jmt.engine.QueueNet.Job;
-import jmt.engine.QueueNet.JobClass;
-import jmt.engine.QueueNet.NetNode;
 
 import java.util.LinkedList;
 

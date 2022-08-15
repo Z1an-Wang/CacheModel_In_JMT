@@ -42,6 +42,11 @@ public class JobClass {
 	//Reference station (who generate the job)
 	private String referenceNodeName;
 
+	private boolean hasCachePair;
+	private boolean isCacheHit;
+
+	private String cachePairClass;
+
 	//----------------------CONSTRUCTORS---------------------------///
 
 	/** Creates a new instance of JobClass
@@ -117,4 +122,21 @@ public class JobClass {
 		this.referenceNodeName = referenceNodeName;
 	}
 
+	public void setCacheReferece(String cachePairClass, boolean isCacheHit){
+		this.hasCachePair = true;
+		this.isCacheHit = isCacheHit;
+		this.cachePairClass = cachePairClass;
+	}
+
+	public boolean isHasCachePair() {
+		return hasCachePair;
+	}
+
+	public boolean isCacheHit() {
+		return isCacheHit;
+	}
+
+	public String getCachePairClass() {
+		return cachePairClass;
+	}
 }

@@ -136,6 +136,8 @@ public class RandomSource extends InputSection {
 
 				if (strategies[c] != null) {
 					job = new Job(jobClass, netJobsList);
+					// assign this netSystem to the job and call `nextjobNumber()` to add job counter.
+					// set the systemEnteringTime to compute system response time
 					job.initialize(this.getNetSystem());
 					updateVisitPath(job);
 

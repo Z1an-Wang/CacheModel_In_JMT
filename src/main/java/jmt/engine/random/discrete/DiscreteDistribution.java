@@ -86,6 +86,7 @@ public abstract class DiscreteDistribution extends AbstractDistribution{
 		return lst;
 	}
 
+	// The index returned is rounded up.
 	protected static int binarySearch(final int lower, final int upper, final double probability, final ArrayList<Double> CDF_List){
 		if (lower+1==upper){
 			return upper;

@@ -91,6 +91,8 @@ public abstract class EngineUtils {
 				return SimulationDefinition.MEASURE_FJ_RP;
 			case SimConstants.FIRING_THROUGHPUT:
 				return SimulationDefinition.MEASURE_FX;
+			case SimConstants.CACHE_HIT_RATE:
+				return SimulationDefinition.MEASURE_CHR;
 			default:
 				return SimulationDefinition.MEASURE_QL;
 		}
@@ -159,6 +161,8 @@ public abstract class EngineUtils {
 			return SimConstants.FORK_JOIN_RESPONSE_TIME;
 		} else if (type.equals(SimulationDefinition.MEASURE_FX)) {
 			return SimConstants.FIRING_THROUGHPUT;
+		} else if (type.equals((SimulationDefinition.MEASURE_CHR))){
+			return SimConstants.CACHE_HIT_RATE;
 		} else {
 			return SimConstants.QUEUE_LENGTH;
 		}
