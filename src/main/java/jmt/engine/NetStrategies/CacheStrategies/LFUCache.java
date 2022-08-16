@@ -10,9 +10,6 @@ public class LFUCache extends CacheStrategy {
 	public LFUCache(){}
 
 	@Override
-	public void initilize(int cacheSize){}
-
-	@Override
 	public CacheItem getRemoveItem(LinkedList<CacheItem> caches) {
 		int numberOfAccess = Integer.MAX_VALUE;
 		int index = -1;
@@ -23,11 +20,7 @@ public class LFUCache extends CacheStrategy {
 				index = i;
 			}
 		}
-		return caches.get(index);	}
+		return caches.get(index);
+	}
 
-	@Override
-	public void cacheHitAccess(CacheItem ci){}
-
-	@Override
-	public void cacheMissAccess(CacheItem ci){}
 }

@@ -19,6 +19,7 @@
 package jmt.engine.NodeSections;
 
 import jmt.common.exception.NetException;
+import jmt.engine.NetStrategies.CacheStrategies.TTLCache;
 import jmt.engine.NetStrategies.CacheStrategy;
 import jmt.engine.QueueNet.*;
 import jmt.engine.random.discrete.*;
@@ -70,15 +71,27 @@ public class Cache extends ServiceSection {
 	@Override
 	protected void nodeLinked(NetNode ownerNode) throws NetException {
 		this.replacePolicy.setRandomEngine(getNetSytem().getEngine());
-		this.replacePolicy.initilize(cacheCapacity);
+		this.replacePolicy.setNetSystem(ownerNode.getNetSystem());
+//		this.replacePolicy.initilize(cacheCapacity);		// Currently no replace Policy need to initialize
+
+		// initialize the TTL replace policy.
+		double ttl = -1.0;
+		if (replacePolicy instanceof TTLCache ) {
+			ttl = ((TTLCache) replacePolicy).getTTL();
+		}
 
 		this.popularity.setRandomEngine(getNetSytem().getEngine());
 		nodeJobsList = ownerNode.getJobInfoList();
 //		System.out.println(replacePolicy.toString());
 
+		// Initialize the cache items lists.
 		items = new ArrayList<CacheItem>(maxItems);
 		for(int i=1; i<=maxItems; i++){
-			items.add(new CacheItem(i));
+			CacheItem cacheItem = new CacheItem(i);
+			items.add(cacheItem);
+			if(ttl>0){
+				cacheItem.setTTL(ttl);
+			}
 		}
 		caches = new LinkedList<CacheItem>();
 //		TestDistribution(popularity);		// method used for test
@@ -116,9 +129,6 @@ public class Cache extends ServiceSection {
 					// update cache item information
 					targetItem.access(job.getNetSystem().getTime());
 
-					// update replace policy info
-					replacePolicy.cacheHitAccess(targetItem);
-
 					// record the cache hit count to the jobListInfo and update hitRate measure.
 					jobsList.CacheJob(originalClass, true);
 				}
@@ -127,35 +137,33 @@ public class Cache extends ServiceSection {
 					// get the cache Miss Class through cache pairs.
 					JobClass cacheMissClass = job.getJobClass().getCachePairClass();
 
+					// if it is TTLCache, clean expired items first.
+					if(replacePolicy instanceof  TTLCache){
+						((TTLCache)replacePolicy).cleanExpiredItem(caches);
+					}
+
 					// else check if the cache is full, apply the replace policy
 					if (caches.size() == cacheCapacity) {
 						// execute the replace policy
 						CacheItem remove = replacePolicy.getRemoveItem(caches);
-						for (int i = 0; i < caches.size(); i++) {
-							if (caches.get(i).getId() == remove.getId()) {
-								caches.remove(i);
-								remove.clear();
-							}
-						}
+						remove.clear();				// set isCache false and clear the accessTimes list.
+						caches.remove(remove);
 					}
 					// else cache is not full, directly add this new items to cache.
 					// update cache item information
 					targetItem.access(job.getNetSystem().getTime());
 					caches.add(targetItem);
 
-					// update replace policy info
-					replacePolicy.cacheMissAccess(targetItem);
-
-					// switch the class
+					// switch the class, in section jobs list
 					job.setJobClass(cacheMissClass);
 					JobInfo jobInfo = jobsList.lookFor(job);
 					jobsList.getInternalJobInfoList(cacheMissClass).add(jobInfo);
 					jobsList.getInternalJobInfoList(originalClass).remove(jobInfo);
-
+					// in node jobs list
 					JobInfo nodeJobInfo = nodeJobsList.lookFor(job);
 					nodeJobsList.getInternalJobInfoList(cacheMissClass).add(nodeJobInfo);
 					nodeJobsList.getInternalJobInfoList(originalClass).remove(nodeJobInfo);
-
+					// in global jobs list
 					if (!(job instanceof ForkJob)) {
 						GlobalJobInfoList global = getOwnerNode().getQueueNet().getJobInfoList();
 						global.performJobClassSwitch(originalClass, cacheMissClass);

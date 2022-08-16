@@ -8,11 +8,15 @@ public class CacheItem {
 
 	private LinkedList<Double> accessTimes;
 
+	// Time to alive
+	private double ttl;
+
 	private boolean isCached;
 
 	public CacheItem(int id) {
 		this.accessTimes = new LinkedList<Double>();
 		this.id = id;
+		this.ttl = -1;
 	}
 
 	public int getId() {
@@ -59,5 +63,11 @@ public class CacheItem {
 		this.accessTimes.clear();
 	}
 
+	public double getTTL() {
+		return ttl;
+	}
 
+	public void setTTL(double ttl) {
+		this.ttl = ttl;
+	}
 }

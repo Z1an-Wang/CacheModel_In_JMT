@@ -9,10 +9,6 @@ public class LRUCache extends CacheStrategy{
 
 	public LRUCache(){}
 
-	@Override
-	public void initilize(int cacheSize) {
-	}
-
 	/**
 	 * Cache item linked list has an access time list which record each request timestamp.
 	 * For LRU (Least Recent Used) is to find the cache item that has the smallest timestamp for last access.
@@ -31,12 +27,6 @@ public class LRUCache extends CacheStrategy{
 			}
 		}
 		return caches.get(index);
-	}
-
-	public void cacheHitAccess(CacheItem ci){
-	}
-
-	public void cacheMissAccess(CacheItem ci){
 	}
 
 //	@Override
