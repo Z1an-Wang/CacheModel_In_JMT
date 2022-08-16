@@ -418,6 +418,14 @@ public interface JobInfoList {
 	 */
 	public void setNumberOfServers(int numberOfServers);
 
-	public abstract void setNetSystem(NetSystem netSystem); 
+	public abstract void setNetSystem(NetSystem netSystem);
 
+	/***************************************
+	 *  Method to calculate cache hit rate
+	 ****************************************/
+	public void analyzeCacheHitRate(JobClass jobClass, Measure measurement);
+	public int getJobsTotalCacheMissCount();
+	public int getJobsTotalCacheHitCount();
+	public int getJobsCacheCountPerClass(JobClass jclass);
+	public void CacheJob(JobClass jclass, boolean isHit);
 }

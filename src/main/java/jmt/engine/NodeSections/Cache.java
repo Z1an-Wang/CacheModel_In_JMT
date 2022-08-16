@@ -40,9 +40,6 @@ public class Cache extends ServiceSection {
 	private int maxItems;
 	private int cacheCapacity;
 
-	private int hitnum;
-	private int missnum;
-
 	private ArrayList<CacheItem> items;		// once created, only retrieve and update.
 	private LinkedList<CacheItem> caches;	// since we need to insert or delete it frequently.
 
@@ -95,6 +92,13 @@ public class Cache extends ServiceSection {
 				Job job = message.getJob();
 				JobClass originalClass = job.getJobClass();
 
+				// if this job is not a belong to a cache class, forward it to the next section.
+				if(!job.getJobClass().isHasCachePair()){
+					sendForward(NetEvent.EVENT_JOB, job, 0.0);
+					sendBackward(NetEvent.EVENT_ACK, job, 0.0);
+					break;
+				}
+
 				// get the request item that follow the specific popularity.
 				int requsetId = 0;
 				CacheItem targetItem = null;
@@ -106,15 +110,17 @@ public class Cache extends ServiceSection {
 
 				// if the items has already cached.
 				if (cacheContains(requsetId)) {
+					// update cache item information
 					targetItem.setLastAccessTime(job.getNetSystem().getTime());
 					targetItem.setNumberOfAccess(targetItem.getNumberOfAccess() + 1);
-					hitnum++;
+
+					// record the cache hit count to the jobListInfo and update hitRate measure.
+					jobsList.CacheJob(originalClass, true);
 				}
 				// Cache miss
 				else {
 					// get the cache Miss Class through cache pairs.
-					String cacheMissClassName = job.getJobClass().getCachePairClass();
-					JobClass cacheMissClass = getJobClasses().get(cacheMissClassName);
+					JobClass cacheMissClass = job.getJobClass().getCachePairClass();
 
 					// else check if the cache is full, apply the replace policy
 					if (caches.size() == cacheCapacity) {
@@ -128,7 +134,8 @@ public class Cache extends ServiceSection {
 							}
 						}
 					}
-					// else cache is not full, add this new items to cache.
+					// else cache is not full, directly add this new items to cache.
+					// update cache item information
 					targetItem.setFirstaccessTime(job.getNetSystem().getTime());
 					targetItem.setCached(true);
 					targetItem.setLastAccessTime(job.getNetSystem().getTime());
@@ -149,7 +156,9 @@ public class Cache extends ServiceSection {
 						GlobalJobInfoList global = getOwnerNode().getQueueNet().getJobInfoList();
 						global.performJobClassSwitch(originalClass, cacheMissClass);
 					}
-					missnum++;
+
+					// record the cache miss count to the jobListInfo and update hitRate measure.
+					jobsList.CacheJob(cacheMissClass, false);
 				}
 				sendForward(NetEvent.EVENT_JOB, job, 0.0);
 				sendBackward(NetEvent.EVENT_ACK, job, 0.0);
@@ -159,7 +168,6 @@ public class Cache extends ServiceSection {
 				break;
 
 			case NetEvent.EVENT_STOP:
-				System.out.println("Final HitRate: "+ (double)hitnum/(double)(hitnum+missnum));
 				break;
 
 			default:

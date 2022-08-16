@@ -22,14 +22,6 @@ import java.util.LinkedList;
 import java.util.ListIterator;
 
 import jmt.common.exception.CachePairClassNotMatchException;
-import jmt.common.exception.NetException;
-import jmt.engine.NodeSections.BlockingQueue;
-import jmt.engine.NodeSections.ClassSwitch;
-import jmt.engine.NodeSections.Enabling;
-import jmt.engine.NodeSections.Firing;
-import jmt.engine.NodeSections.Fork;
-import jmt.engine.NodeSections.Queue;
-import jmt.engine.NodeSections.Storage;
 import jmt.engine.dataAnalysis.Measure;
 import jmt.engine.dataAnalysis.TempMeasure;
 
@@ -140,17 +132,23 @@ public class QueueNetwork {
 		jobClass.setId(jobClasses.indexOf(jobClass));
 	}
 
-	public boolean checkJobClass() throws CachePairClassNotMatchException{
+	public void checkAndConnectJobClass() throws CachePairClassNotMatchException{
 		for(int i=0 ; i< jobClasses.size(); i++){
 			if(jobClasses.get(i).isHasCachePair()){
+				// Check whether the cache class has its pair.
 				String selfName = jobClasses.get(i).getName();
-				String pairName = jobClasses.get(i).getCachePairClass();
-				if(!jobClasses.get(pairName).getCachePairClass().equals(selfName)){
+				String pairName = jobClasses.get(i).getCachePairClassName();
+				if(!jobClasses.get(pairName).getCachePairClassName().equals(selfName)){
 					throw new CachePairClassNotMatchException("The Cache Pair Class Not Match in "+selfName+" and its pair class " + pairName );
+				}
+
+				// connect to its pair class.
+				if (jobClasses.get(selfName).getCachePairClass() == null){
+					jobClasses.get(selfName).setCachePairClass(jobClasses.get(pairName));
+					jobClasses.get(pairName).setCachePairClass(jobClasses.get(selfName));
 				}
 			}
 		}
-		return true;
 	}
 
 	/**

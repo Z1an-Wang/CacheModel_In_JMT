@@ -45,7 +45,8 @@ public class JobClass {
 	private boolean hasCachePair;
 	private boolean isCacheHit;
 
-	private String cachePairClass;
+	private JobClass cachePairClass;
+	private String cachePairClassName;
 
 	//----------------------CONSTRUCTORS---------------------------///
 
@@ -122,10 +123,10 @@ public class JobClass {
 		this.referenceNodeName = referenceNodeName;
 	}
 
-	public void setCacheReferece(String cachePairClass, boolean isCacheHit){
+	public void setCacheReferece(String cachePairClassName, boolean isCacheHit){
 		this.hasCachePair = true;
 		this.isCacheHit = isCacheHit;
-		this.cachePairClass = cachePairClass;
+		this.cachePairClassName = cachePairClassName;
 	}
 
 	public boolean isHasCachePair() {
@@ -136,7 +137,15 @@ public class JobClass {
 		return isCacheHit;
 	}
 
-	public String getCachePairClass() {
+	public String getCachePairClassName() {
+		return cachePairClassName;
+	}
+	public JobClass getCachePairClass() {
 		return cachePairClass;
 	}
+
+	public void setCachePairClass(JobClass jobClass) {
+		this.cachePairClass = jobClass;
+	}
+
 }

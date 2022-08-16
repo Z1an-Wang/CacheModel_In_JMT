@@ -311,7 +311,7 @@ public class Simulation {
 			for (JobClass classe : classes) {
 				network.addJobClass(classe);
 			}
-			network.checkJobClass();
+			network.checkAndConnectJobClass();
 
 			//creates all nodes
 			NetNode[] netNodes = new NetNode[nodes.size()];
@@ -518,21 +518,21 @@ public class Simulation {
 					case SimConstants.DROP_RATE:
 						netNodes[nodePosition].analyze(SimConstants.LIST_DROP_RATE, jClass, ms.getMeasure());
 						break;
-						case SimConstants.RENEGING_RATE:
-							netNodes[nodePosition].analyze(SimConstants.LIST_RENEGING_RATE, jClass, ms.getMeasure());
-							break;
-						case SimConstants.BALKING_RATE:
-							netNodes[nodePosition].analyze(SimConstants.LIST_BALKING_RATE, jClass, ms.getMeasure());
-							break;
-						case SimConstants.RETRIAL_ATTEMPTS_RATE:
-							netNodes[nodePosition].analyze(SimConstants.LIST_RETRIAL_RATE, jClass, ms.getMeasure());
-							break;
-						case SimConstants.RETRIAL_ORBIT_SIZE:
-							netNodes[nodePosition].analyze(SimConstants.LIST_RETRIAL_ORBIT_SIZE, jClass, ms.getMeasure());
-							break;
-						case SimConstants.WAITING_TIME:
-							netNodes[nodePosition].analyze(SimConstants.LIST_WAITING_TIME, jClass, ms.getMeasure());
-							break;
+					case SimConstants.RENEGING_RATE:
+						netNodes[nodePosition].analyze(SimConstants.LIST_RENEGING_RATE, jClass, ms.getMeasure());
+						break;
+					case SimConstants.BALKING_RATE:
+						netNodes[nodePosition].analyze(SimConstants.LIST_BALKING_RATE, jClass, ms.getMeasure());
+						break;
+					case SimConstants.RETRIAL_ATTEMPTS_RATE:
+						netNodes[nodePosition].analyze(SimConstants.LIST_RETRIAL_RATE, jClass, ms.getMeasure());
+						break;
+					case SimConstants.RETRIAL_ORBIT_SIZE:
+						netNodes[nodePosition].analyze(SimConstants.LIST_RETRIAL_ORBIT_SIZE, jClass, ms.getMeasure());
+						break;
+					case SimConstants.WAITING_TIME:
+						netNodes[nodePosition].analyze(SimConstants.LIST_WAITING_TIME, jClass, ms.getMeasure());
+						break;
 						/* case SimConstants.NUM_BUSY_SERVERS:
 							netNodes[nodePosition].analyze(SimConstants.LIST_BUSY_SERVERS, jClass, ms.getMeasure());
 							break;*/
@@ -557,8 +557,9 @@ public class Simulation {
 					case SimConstants.FIRING_THROUGHPUT:
 						netNodes[nodePosition].getSection(NodeSection.SERVICE).analyzeTransition(SimConstants.FIRING_THROUGHPUT, ms.getjClass(), ms.getMeasure());
 						break;
-//					case SimConstants.CACHE_HIT_RATE:
-//						netNodes[nodePosition].getSection(NodeSection.SERVICE).analyzeCacheHitRate;
+					case SimConstants.CACHE_HIT_RATE:
+						netNodes[nodePosition].getSection(NodeSection.SERVICE).analyze(SimConstants.CACHE_HIT_RATE, jClass, ms.getMeasure());
+						break;
 					}
 				}
 				// Global measures (new by Bertoli Marco)
