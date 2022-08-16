@@ -19,6 +19,12 @@ public abstract class CacheStrategy implements AutoCheck{
 	public void setRandomEngine(RandomEngine engine) {
 		this.engine = engine;
 	}
+
+	public abstract void initilize(int cacheSize);
+
+	public abstract void cacheHitAccess(CacheItem ci);
+
+	public abstract void cacheMissAccess(CacheItem ci);
 	
 	public abstract CacheItem getRemoveItem(LinkedList<CacheItem> caches);
 

@@ -10,9 +10,23 @@ public class RandomCache extends CacheStrategy {
 	public RandomCache(){}
 
 	@Override
+	public void initilize(int cacheSize){}
+
+	/**
+	 * For RandomCache is to randomly choose a cache item in the cached items list.
+	 * @param caches the list of the cached items.
+	 * @return
+	 */
+	@Override
 	public CacheItem getRemoveItem(LinkedList<CacheItem> caches) {
 		return caches.get((int)Math.floor(engine.raw() * caches.size()));
 	}
+
+	@Override
+	public void cacheHitAccess(CacheItem ci){};
+
+	@Override
+	public void cacheMissAccess(CacheItem ci){};
 
 //	@Override
 //	public boolean needToCache (NetNode ownerNode){

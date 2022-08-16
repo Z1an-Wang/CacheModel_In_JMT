@@ -70,8 +70,11 @@ public class Cache extends ServiceSection {
 	@Override
 	protected void nodeLinked(NetNode ownerNode) throws NetException {
 		this.replacePolicy.setRandomEngine(getNetSytem().getEngine());
+		this.replacePolicy.initilize(cacheCapacity);
+
 		this.popularity.setRandomEngine(getNetSytem().getEngine());
 		nodeJobsList = ownerNode.getJobInfoList();
+//		System.out.println(replacePolicy.toString());
 
 		items = new ArrayList<CacheItem>(maxItems);
 		for(int i=1; i<=maxItems; i++){
@@ -111,8 +114,10 @@ public class Cache extends ServiceSection {
 				// if the items has already cached.
 				if (cacheContains(requsetId)) {
 					// update cache item information
-					targetItem.setLastAccessTime(job.getNetSystem().getTime());
-					targetItem.setNumberOfAccess(targetItem.getNumberOfAccess() + 1);
+					targetItem.access(job.getNetSystem().getTime());
+
+					// update replace policy info
+					replacePolicy.cacheHitAccess(targetItem);
 
 					// record the cache hit count to the jobListInfo and update hitRate measure.
 					jobsList.CacheJob(originalClass, true);
@@ -129,18 +134,17 @@ public class Cache extends ServiceSection {
 						for (int i = 0; i < caches.size(); i++) {
 							if (caches.get(i).getId() == remove.getId()) {
 								caches.remove(i);
-								remove.setCached(false);
-								remove.setNumberOfAccess(0);
+								remove.clear();
 							}
 						}
 					}
 					// else cache is not full, directly add this new items to cache.
 					// update cache item information
-					targetItem.setFirstaccessTime(job.getNetSystem().getTime());
-					targetItem.setCached(true);
-					targetItem.setLastAccessTime(job.getNetSystem().getTime());
-					targetItem.setNumberOfAccess(1);
+					targetItem.access(job.getNetSystem().getTime());
 					caches.add(targetItem);
+
+					// update replace policy info
+					replacePolicy.cacheMissAccess(targetItem);
 
 					// switch the class
 					job.setJobClass(cacheMissClass);

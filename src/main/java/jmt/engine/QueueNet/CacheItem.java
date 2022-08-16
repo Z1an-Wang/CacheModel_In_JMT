@@ -8,13 +8,7 @@ public class CacheItem {
 
 	private LinkedList<Double> accessTimes;
 
-	private double firstaccessTime;
-
-	private double lastAccessTime;
-
 	private boolean isCached;
-
-	private int numberOfAccess;
 
 	public CacheItem(int id) {
 		this.accessTimes = new LinkedList<Double>();
@@ -29,35 +23,41 @@ public class CacheItem {
 //		this.id = id;
 //	}
 
-	public double getFirstaccessTime() {
-		return firstaccessTime;
-	}
-
-	public void setFirstaccessTime(double firstaccessTime) {
-		this.firstaccessTime = firstaccessTime;
+	public double getFirstAccessTime() {
+		return accessTimes.getFirst();
 	}
 
 	public double getLastAccessTime() {
-		return lastAccessTime;
-	}
-
-	public void setLastAccessTime(double lastAccessTime) {
-		this.lastAccessTime = lastAccessTime;
+		return accessTimes.getLast();
 	}
 
 	public boolean isCached() {
 		return isCached;
 	}
 
-	public void setCached(boolean cached) {
+	private void setCached(boolean cached) {
 		isCached = cached;
 	}
 
 	public int getNumberOfAccess() {
-		return numberOfAccess;
+		return accessTimes.size();
 	}
 
-	public void setNumberOfAccess(int numberOfAccess) {
-		this.numberOfAccess = numberOfAccess;
+	public LinkedList<Double> getAccessTimes() {
+		return accessTimes;
 	}
+
+	public void access(double time) {
+		if(!isCached){
+			setCached(true);
+		}
+		this.accessTimes.addLast(time);
+	}
+
+	public void clear() {
+		setCached(false);
+		this.accessTimes.clear();
+	}
+
+
 }
