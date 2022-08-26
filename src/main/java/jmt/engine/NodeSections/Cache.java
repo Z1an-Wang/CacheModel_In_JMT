@@ -79,6 +79,7 @@ public class Cache extends ServiceSection {
 		double ttl = -1.0;
 		if (replacePolicy instanceof TTLCache ) {
 			ttl = ((TTLCache) replacePolicy).getTTL();
+			((TTLCache) replacePolicy).getReplacePolicy().setRandomEngine(getNetSytem().getEngine());
 		}
 
 		// initialize the popularity for different class.

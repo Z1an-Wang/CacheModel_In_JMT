@@ -42,6 +42,8 @@ public class TTLCache extends CacheStrategy {
 		return ttl;
 	}
 
+	public CacheStrategy getReplacePolicy() { return replacePolicy; }
+
 	private boolean isExpired(CacheItem ci){
 		return ci.getLastAccessTime()+ci.getTTL() < netSystem.getTime();
 	}
