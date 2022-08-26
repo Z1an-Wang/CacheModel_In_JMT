@@ -424,8 +424,9 @@ public interface JobInfoList {
 	 *  Method to calculate cache hit rate
 	 ****************************************/
 	public void analyzeCacheHitRate(JobClass jobClass, Measure measurement);
+	public void analyzeCacheMissRate(JobClass jobClass, Measure measurement);
 	public int getJobsTotalCacheMissCount();
 	public int getJobsTotalCacheHitCount();
 	public int getJobsCacheCountPerClass(JobClass jclass);
-	public void CacheJob(JobClass jclass, boolean isHit);
+	public void CacheJob(JobClass jclass, boolean isHit, JobClass hitClass, JobClass missClass);
 }

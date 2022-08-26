@@ -131,6 +131,10 @@ public class LinkedJobInfoList implements JobInfoList {
 
 	protected Measure hitRatePerClass[];
 
+	protected Measure missRate;
+
+	protected Measure missRatePerClass[];
+
 	protected InverseMeasure throughput;
 
 	protected InverseMeasure throughputPerClass[];
@@ -1222,6 +1226,18 @@ public class LinkedJobInfoList implements JobInfoList {
 	}
 
 	@Override
+	public void analyzeCacheMissRate(JobClass jobClass, Measure measurement){
+		if (jobClass != null) {
+			if (missRatePerClass == null) {
+				missRatePerClass = new Measure[numberOfJobClasses];
+			}
+			missRatePerClass[jobClass.getId()] = measurement;
+		} else {
+			missRate = measurement;
+		}
+	}
+
+	@Override
 	public int getJobsTotalCacheMissCount() { return jobsTotalCacheMissCount; }
 
 	@Override
@@ -1230,33 +1246,18 @@ public class LinkedJobInfoList implements JobInfoList {
 	@Override
 	public int getJobsCacheCountPerClass(JobClass jclass) { return jobsCacheCountPerClass[jclass.getId()]; }
 
-
-	protected void updateCacheHitRate(JobClass jclass){
+	protected void updateCacheHitRate(JobClass jclass, JobClass hitClass, JobClass missClass){
 		// To Make sure the input value always be a positive value, to avoid NaN measure reuslt.
-		if(jobsCacheCountPerClass[jclass.getId()]==0 || jobsCacheCountPerClass[jclass.getCachePairClass().getId()]==0)
-			return;
-		if(jobsTotalCacheHitCount==0 || jobsTotalCacheMissCount==0)
+		if(jobsTotalCacheHitCount==0 && jobsTotalCacheMissCount==0)
 			return;
 
 		if (hitRatePerClass != null) {
+			int missClassId = missClass.getId();
+			int hitClassId = hitClass.getId();
+			double hitRate = (double)jobsCacheCountPerClass[hitClassId] /
+						(jobsCacheCountPerClass[missClassId] + jobsCacheCountPerClass[hitClassId]);
 
-			// we make the cache class as a pair of hit and miss,
-			// if a class 'isCacheHit = true', the opposite class connected to this class is cache Miss class.
-			// but usually, cacheHit class is used as the input jClass in Measure.
-			int targetClassId = jclass.getId();
-			int pairClassId = jclass.getCachePairClass().getId();
-			double hitRate = 0.0;
-
-			if(jclass.isCacheHit()){
-				hitRate = (double)jobsCacheCountPerClass[targetClassId] /
-						(jobsCacheCountPerClass[targetClassId] + jobsCacheCountPerClass[pairClassId]);
-			}
-			else {
-				hitRate = (double)jobsCacheCountPerClass[pairClassId] /
-						(double)(jobsCacheCountPerClass[targetClassId] + jobsCacheCountPerClass[pairClassId]);
-			}
-
-			Measure m = hitRatePerClass[targetClassId];
+			Measure m = hitRatePerClass[jclass.getId()];
 			if (m != null) {
 				m.update(hitRate, 1.0);
 			}
@@ -1268,16 +1269,41 @@ public class LinkedJobInfoList implements JobInfoList {
 		}
 	}
 
+	protected void updateCacheMissRate(JobClass jclass, JobClass hitClass, JobClass missClass){
+		// To Make sure the input value always be a positive value, to avoid NaN measure reuslt.
+		if(jobsTotalCacheHitCount==0 && jobsTotalCacheMissCount==0)
+			return;
+
+		if (missRatePerClass != null) {
+			int missClassId = missClass.getId();
+			int hitClassId = hitClass.getId();
+			double hitRate = (double)jobsCacheCountPerClass[missClassId] /
+					(jobsCacheCountPerClass[missClassId] + jobsCacheCountPerClass[hitClassId]);
+
+			Measure m = missRatePerClass[jclass.getId()];
+			if (m != null) {
+				m.update(hitRate, 1.0);
+			}
+		}
+		if (missRate != null) {
+			double tempHitRate = (double)getJobsTotalCacheMissCount()/
+					(double) (getJobsTotalCacheHitCount()+getJobsTotalCacheMissCount());
+			missRate.update(tempHitRate, 1.0);
+		}
+	}
+
 	@Override
-	public void CacheJob(JobClass jclass, boolean isHit){
-		updateCacheHitRate(jclass);
+	public void CacheJob(JobClass jclass, boolean isHit, JobClass hitClass, JobClass missClass){
+		updateCacheHitRate(jclass, hitClass, missClass);
+		updateCacheMissRate(jclass, hitClass, missClass);
 		if(isHit){
 			jobsTotalCacheHitCount++;
+			jobsCacheCountPerClass[hitClass.getId()]++;
 		}
 		else {
 			jobsTotalCacheMissCount++;
+			jobsCacheCountPerClass[missClass.getId()]++;
 		}
 		// we divide the hit and miss into two class, so only add to the classID corresponding class.
-		jobsCacheCountPerClass[jclass.getId()]++;
 	}
 }

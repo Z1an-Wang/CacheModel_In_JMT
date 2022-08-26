@@ -93,6 +93,8 @@ public abstract class EngineUtils {
 				return SimulationDefinition.MEASURE_FX;
 			case SimConstants.CACHE_HIT_RATE:
 				return SimulationDefinition.MEASURE_CHR;
+			case SimConstants.CACHE_MISS_RATE:
+				return SimulationDefinition.MEASURE_CMR;
 			default:
 				return SimulationDefinition.MEASURE_QL;
 		}
@@ -163,6 +165,8 @@ public abstract class EngineUtils {
 			return SimConstants.FIRING_THROUGHPUT;
 		} else if (type.equals((SimulationDefinition.MEASURE_CHR))){
 			return SimConstants.CACHE_HIT_RATE;
+		} else if (type.equals((SimulationDefinition.MEASURE_CMR))){
+			return SimConstants.CACHE_MISS_RATE;
 		} else {
 			return SimConstants.QUEUE_LENGTH;
 		}

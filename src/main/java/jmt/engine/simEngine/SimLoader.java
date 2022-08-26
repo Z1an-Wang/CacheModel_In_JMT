@@ -325,8 +325,6 @@ public class SimLoader {
 				String currentClassType = currentJobClass.getAttribute("type");
 				String currentClassPriority = currentJobClass.getAttribute("priority");
 				String referenceNode = currentJobClass.getAttribute("referenceSource");
-				String cacheMissClass = currentJobClass.getAttribute("cacheMissClass");
-				String cacheHitClass = currentJobClass.getAttribute("cacheHitClass");
 
 				int type, priority;
 
@@ -345,16 +343,6 @@ public class SimLoader {
 				//add job class
 				jobClasses[i] = new JobClass(currentClassName, priority, type, referenceNode);
 				//end NEW
-
-				// if the jobClass connect to the cacheMiss class, set it as the cacheHit class
-				if(!cacheMissClass.equals("") & cacheHitClass.equals("")){
-					jobClasses[i].setCacheReferece(cacheMissClass, true);
-				}
-
-				// if the jobClass connect ot the cacheHit class, set it as the cacheMiss class
-				if(cacheMissClass.equals("") & !cacheHitClass.equals("")){
-					jobClasses[i].setCacheReferece(cacheHitClass, false);
-				}
 
 				if (DEBUG) {
 					System.out.println("Class " + jobClasses[i].getName() + " created");
