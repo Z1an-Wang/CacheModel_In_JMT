@@ -87,15 +87,20 @@ public abstract class DiscreteDistribution extends AbstractDistribution{
 	}
 
 	// The index returned is rounded up.
+	// Both lower and upper are included
 	protected static int binarySearch(final int lower, final int upper, final double probability, final ArrayList<Double> CDF_List){
-		if (lower+1==upper){
-			return upper;
+		if(probability<=CDF_List.get(lower)){
+			return lower;
 		} else {
-			int mid = (int)(lower+upper)/2;
-			if(probability> CDF_List.get(lower) && probability< CDF_List.get(mid)){
-				return binarySearch(lower, mid, probability, CDF_List);
+			if (lower + 1 == upper) {
+				return upper;
 			} else {
-				return binarySearch(mid, upper, probability, CDF_List);
+				int mid = (int) (lower + upper) / 2;
+				if (probability > CDF_List.get(lower) && probability < CDF_List.get(mid)) {
+					return binarySearch(lower, mid, probability, CDF_List);
+				} else {
+					return binarySearch(mid, upper, probability, CDF_List);
+				}
 			}
 		}
 	}

@@ -8,44 +8,45 @@ import java.util.ArrayList;
 
 public class Binomial extends DiscreteDistribution {
 
-	private int numberOfElements;
-	private double probability;
+	private int n;
+	private double p;
 
 	// Constructor with NO parameter, because the XML initialized the distribution parameter through `Parameter`.
 	public Binomial(){ super(); }
 
-	public Binomial(double probability, int numberOfElements) throws IncorrectDistributionParameterException {
-		if ( numberOfElements<0) {
-			throw new IncorrectDistributionParameterException("`numberOfElements` should be positive.");
+	public Binomial(double p, int n) throws IncorrectDistributionParameterException {
+		if ( n<0) {
+			throw new IncorrectDistributionParameterException("`numberOfExperiment` should be positive.");
 		}
-		if (probability<0 || probability>1) {
+		if (p<0 || p>1) {
 			throw new IncorrectDistributionParameterException("`probability` should be in range [0, 1]");
 		}
 
 		outdated();		// Set all cache flag false;
-		this.probability = probability;
-		this.numberOfElements = numberOfElements;
+		this.p = p;
+		this.n = n;
 		this.cached = true;
 	}
 
-	public Binomial(Double probability, Integer numberOfElements) throws IncorrectDistributionParameterException {
-		this(probability.doubleValue(), numberOfElements.intValue());
+	// Because the input is number of items, and the input of Binomial distribution is number of experiments.
+	public Binomial(Double p, Integer numberOfItems) throws IncorrectDistributionParameterException {
+		this(p.doubleValue(), numberOfItems.intValue()-1);
 	}
-	public Binomial(Integer numberOfElements, Double probability) throws IncorrectDistributionParameterException {
-		this(probability.doubleValue(), numberOfElements.intValue());
+	public Binomial(Integer numberOfItems, Double p) throws IncorrectDistributionParameterException {
+		this(p.doubleValue(), numberOfItems.intValue()-1);
 	}
 
-	public boolean updatePar(double probability, int numberOfElements)throws IncorrectDistributionParameterException{
-		if ( numberOfElements<0) {
-			throw new IncorrectDistributionParameterException("`numberOfElements` should be positive.");
+	public boolean updatePar(double p, int n)throws IncorrectDistributionParameterException{
+		if ( n<0) {
+			throw new IncorrectDistributionParameterException("`numberOfExperiment` should be positive.");
 		}
-		if (probability<0 || probability>1) {
+		if (p<0 || p>1) {
 			throw new IncorrectDistributionParameterException("`probability` should be in range [0, 1]");
 		}
 
 		outdated();		// Set all cache flag false;
-		this.probability = probability;
-		this.numberOfElements = numberOfElements;
+		this.p = p;
+		this.n = n;
 		this.cached = true;
 
 		return true;
@@ -54,7 +55,7 @@ public class Binomial extends DiscreteDistribution {
 	@Override
 	public boolean updatePar(Parameter p) throws IncorrectDistributionParameterException{
 		if (p instanceof BinomialPar && p.check()){
-			return updatePar(((BinomialPar) p).getProbability(), ((BinomialPar) p).getNumberOfElements());
+			return updatePar(((BinomialPar) p).getProbability(), ((BinomialPar) p).getNumberOfExperiment());
 		}
 		return false;
 	}
@@ -62,7 +63,7 @@ public class Binomial extends DiscreteDistribution {
 	@Override
 	public int getUpper() {
 		if(cached){
-			return numberOfElements;
+			return n;
 		}
 		return -1;
 	}
@@ -84,7 +85,7 @@ public class Binomial extends DiscreteDistribution {
 			ArrayList<Double> lst = new ArrayList<Double>(upper-lower+1);
 			double CDF = 0.0;
 			for(int i=lower; i<=upper; i++){
-				CDF += binomial_pmf(numberOfElements, i, probability);
+				CDF += binomial_pmf(n, i, p);
 				lst.add(i, CDF);
 			}
 			return lst;
@@ -93,13 +94,15 @@ public class Binomial extends DiscreteDistribution {
 	}
 
 	@Override
+	// Because the input is number of items, and the input of Binomial distribution is number of experiments.
+	// when nextRand() called, we need to the next item's id, so plus 1.
 	public int nextRand() {
 		if(cached){
 			if(!CDFListCalculated){
-				this.CDFList = createdCDFList(0, numberOfElements);
+				this.CDFList = createdCDFList(0, n);
 				this.CDFListCalculated = true;
 			}
-			return binarySearch(0, numberOfElements, engine.nextDouble(), this.CDFList);
+			return binarySearch(0, n, engine.nextDouble(), this.CDFList)+1;
 		}
 		return -1;
 	}
@@ -107,10 +110,10 @@ public class Binomial extends DiscreteDistribution {
 	@Override
 	public double pmf(int x) {
 		if(cached){
-			if( x<0 || x>numberOfElements ){
+			if( x<0 || x>n ){
 				return 0.0;
 			}
-			return binomial_pmf(numberOfElements, x, probability);
+			return binomial_pmf(n, x, p);
 		}
 		return -1.0;
 	}
@@ -120,12 +123,12 @@ public class Binomial extends DiscreteDistribution {
 		if(cached){
 			if (x < 0) {
 				return 0.0;
-			} else if (x >= numberOfElements) {
+			} else if (x >= n) {
 				return 1.0;
 			}
 			double result = 0.0;
 			for(int i=0; i<=x; i++){
-				result += binomial_pmf(numberOfElements, i, probability);
+				result += binomial_pmf(n, i, p);
 			}
 			return result;
 		}
@@ -135,7 +138,7 @@ public class Binomial extends DiscreteDistribution {
 	@Override
 	public double theorMean() {
 		if(cached){
-			return probability * numberOfElements;
+			return p * n;
 		}
 		return -1.0;
 	}
@@ -143,58 +146,60 @@ public class Binomial extends DiscreteDistribution {
 	@Override
 	public double theorVariance() {
 		if(cached){
-			return numberOfElements * probability * (1-probability);
+			return n * p * (1-p);
 		}
 		return -1.0;
 	}
 
 	@Override
-	public int nextRand(Parameter p) throws IncorrectDistributionParameterException {
-		if (p instanceof BinomialPar && p.check()) {
-			BinomialPar up = (BinomialPar) p;
-			int num = up.getNumberOfElements();
-			double probability = up.getProbability();
+	// Because the input is number of items, and the input of Binomial distribution is number of experiments.
+	// when nextRand() called, we need to the next item's id, so plus 1.
+	public int nextRand(Parameter par) throws IncorrectDistributionParameterException {
+		if (par instanceof BinomialPar && par.check()) {
+			BinomialPar up = (BinomialPar) par;
+			int num = up.getNumberOfExperiment();
+			double p = up.getProbability();
 
 			ArrayList<Double> lst = new ArrayList<Double>(num+1);
 			double CDF = 0.0;
 			for(int i=0; i<=num; i++){
-				CDF += binomial_pmf(num, i, probability);
+				CDF += binomial_pmf(num, i, p);
 				lst.add(i, CDF);
 			}
-			return binarySearch(0, num, engine.nextDouble(), lst);
+			return binarySearch(0, num, engine.nextDouble(), lst)+1;
 		} else {
 			throw new IncorrectDistributionParameterException(
 				"Error: the Parameter must be the `BinomialPar`\n" +
-				"Error: numberOfElements must be a integer > 0\n" +
+				"Error: numberOfExperiment must be a integer > 0\n" +
 				"Error: Probability must be in range [0, 1]");
 		}
 	}
 
 	@Override
-	public double pmf(int x, Parameter p) throws IncorrectDistributionParameterException {
-		if (p instanceof BinomialPar && p.check()) {
-			BinomialPar up = (BinomialPar) p;
-			int num = up.getNumberOfElements();
-			double probability = up.getProbability();
+	public double pmf(int x, Parameter par) throws IncorrectDistributionParameterException {
+		if (par instanceof BinomialPar && par.check()) {
+			BinomialPar up = (BinomialPar) par;
+			int num = up.getNumberOfExperiment();
+			double p = up.getProbability();
 
 			if( x<0 || x>num ){
 				return 0.0;
 			}
-			return binomial_pmf(num, x, probability);
+			return binomial_pmf(num, x, p);
 		} else {
 			throw new IncorrectDistributionParameterException(
 				"Error: the Parameter must be the `BinomialPar`\n" +
-				"Error: numberOfElements must be a integer > 0\n" +
+				"Error: numberOfExperiment must be a integer > 0\n" +
 				"Error: Probability must be in range [0, 1]");
 		}
 	}
 
 	@Override
-	public double cdf(int x, Parameter p) throws IncorrectDistributionParameterException {
-		if (p instanceof BinomialPar && p.check()) {
-			BinomialPar up = (BinomialPar) p;
-			int num = up.getNumberOfElements();
-			double probability = up.getProbability();
+	public double cdf(int x, Parameter par) throws IncorrectDistributionParameterException {
+		if (par instanceof BinomialPar && par.check()) {
+			BinomialPar up = (BinomialPar) par;
+			int num = up.getNumberOfExperiment();
+			double p = up.getProbability();
 
 			if (x < 0) {
 				return 0.0;
@@ -203,41 +208,41 @@ public class Binomial extends DiscreteDistribution {
 			}
 			double result = 0.0;
 			for(int i=0; i<=x; i++){
-				result += binomial_pmf(num, i, probability);
+				result += binomial_pmf(num, i, p);
 			}
 			return result;
 		} else {
 			throw new IncorrectDistributionParameterException(
 				"Error: the Parameter must be the `BinomialPar`\n" +
-				"Error: numberOfElements must be a integer > 0\n" +
+				"Error: numberOfExperiment must be a integer > 0\n" +
 				"Error: Probability must be in range [0, 1]");
 		}
 	}
 
 	@Override
-	public double theorMean(Parameter p) throws IncorrectDistributionParameterException {
-		if (p instanceof BinomialPar && p.check()) {
-			BinomialPar up = (BinomialPar) p;
-			return up.getProbability() * up.getNumberOfElements();
+	public double theorMean(Parameter par) throws IncorrectDistributionParameterException {
+		if (par instanceof BinomialPar && par.check()) {
+			BinomialPar up = (BinomialPar) par;
+			return up.getProbability() * up.getNumberOfExperiment();
 		} else {
 			throw new IncorrectDistributionParameterException(
 				"Error: the Parameter must be the `BinomialPar`\n" +
-				"Error: numberOfElements must be a integer > 0\n" +
+				"Error: numberOfExperiment must be a integer > 0\n" +
 				"Error: Probability must be in range [0, 1]");
 		}
 	}
 
 	@Override
-	public double theorVariance(Parameter p) throws IncorrectDistributionParameterException {
-		if (p instanceof BinomialPar && p.check()) {
-			BinomialPar up = (BinomialPar) p;
-			double num = (double) up.getNumberOfElements();
-			double probability = up.getProbability();
-			return num * probability * (1-probability);
+	public double theorVariance(Parameter par) throws IncorrectDistributionParameterException {
+		if (par instanceof BinomialPar && par.check()) {
+			BinomialPar up = (BinomialPar) par;
+			double num = (double) up.getNumberOfExperiment();
+			double p = up.getProbability();
+			return num * p * (1-p);
 		} else {
 			throw new IncorrectDistributionParameterException(
 				"Error: the Parameter must be the `BinomialPar`\n" +
-				"Error: numberOfElements must be a integer > 0\n" +
+				"Error: numberOfExperiment must be a integer > 0\n" +
 				"Error: Probability must be in range [0, 1]");
 		}
 	}

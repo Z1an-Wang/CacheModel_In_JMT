@@ -94,7 +94,7 @@ public class Zipf extends DiscreteDistribution {
 	@Override
 	public int getlower() {
 		if(cached){
-			return 1;
+			return 0;
 		}
 		return -1;
 	}
@@ -111,7 +111,7 @@ public class Zipf extends DiscreteDistribution {
 			if (x <= 0 || x > numberOfElements) {
 				return 0.0;
 			}
-			return 1/(Math.pow(x, alpha) * Harmonic(numberOfElements, alpha));
+			return 1/(Math.pow(x, alpha) * Hmax);
 		}
 		return -1.0;
 	}
