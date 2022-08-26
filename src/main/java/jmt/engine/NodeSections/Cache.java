@@ -36,6 +36,12 @@ import java.util.LinkedList;
  * @author Sebatiano Spicuglia, Arif Canakoglu
  */
 public class Cache extends ServiceSection {
+
+	String hitClassName;
+	String missClassName;
+	JobClass hitClass;
+	JobClass missClass;
+
 	private int maxItems;
 	private int cacheCapacity;
 	private int numOfJobClasses;
@@ -52,7 +58,9 @@ public class Cache extends ServiceSection {
 //	TreeMap<Integer, Integer> count;		// variable used for test
 
 
-	public Cache(Integer maxItems, Integer cacheCapacity, CacheStrategy replacePolicy, DiscreteDistribution[] pop){
+	public Cache(Integer maxItems, Integer cacheCapacity, String hitClassName, String missClassName, CacheStrategy replacePolicy, DiscreteDistribution[] pop){
+		this.hitClassName = hitClassName;
+		this.missClassName = missClassName;
 		this.maxItems = maxItems;
 		this.cacheCapacity = cacheCapacity;
 		this.replacePolicy = replacePolicy;
@@ -69,6 +77,9 @@ public class Cache extends ServiceSection {
 	 */
 	@Override
 	protected void nodeLinked(NetNode ownerNode) throws NetException {
+		this.hitClass = getJobClasses().get(hitClassName);
+		this.missClass = getJobClasses().get(missClassName);
+
 		this.numOfJobClasses = getJobClasses().size();
 
 		this.replacePolicy.setRandomEngine(getNetSytem().getEngine());
@@ -77,7 +88,7 @@ public class Cache extends ServiceSection {
 
 		// initialize the TTL replace policy.
 		double ttl = -1.0;
-		if (replacePolicy instanceof TTLCache ) {
+		if (replacePolicy instanceof TTLCache) {
 			ttl = ((TTLCache) replacePolicy).getTTL();
 		}
 
@@ -115,13 +126,6 @@ public class Cache extends ServiceSection {
 				Job job = message.getJob();
 				JobClass originalClass = job.getJobClass();
 
-				// if this job is not a belong to a cache class, forward it to the next section.
-				// `isCacheHit` of an input class means it's from its original class, otherwise, it's from cache miss class.
-				if(!job.getJobClass().isHasCachePair() || !job.getJobClass().isCacheHit()){
-					sendForward(NetEvent.EVENT_JOB, job, 0.0);
-					sendBackward(NetEvent.EVENT_ACK, job, 0.0);
-					break;
-				}
 
 				// get the request item that follow the specific popularity.
 				int requsetId = 0;
@@ -146,12 +150,15 @@ public class Cache extends ServiceSection {
 					targetItem.access(job.getNetSystem().getTime());
 
 					// record the cache hit count to the jobListInfo and update hitRate measure.
-					jobsList.CacheJob(originalClass, true);
+					jobsList.CacheJob(originalClass, true, hitClass, missClass);
+
+					// switch the job from old section/node/global job info list to the hit class job list
+					switchJobList(job, originalClass, hitClass);
 				}
 				// Cache miss
 				else {
 					// get the cache Miss Class through cache pairs.
-					JobClass cacheMissClass = job.getJobClass().getCachePairClass();
+
 
 					// if it is TTLCache, clean expired items first.
 					if(replacePolicy instanceof  TTLCache){
@@ -170,22 +177,10 @@ public class Cache extends ServiceSection {
 					targetItem.access(job.getNetSystem().getTime());
 					caches.add(targetItem);
 					// record the cache miss count to the jobListInfo and update hitRate measure.
-					jobsList.CacheJob(cacheMissClass, false);
+					jobsList.CacheJob(originalClass, false, hitClass, missClass);
 
-					// switch the class, in section jobs list
-					job.setJobClass(cacheMissClass);
-					JobInfo jobInfo = jobsList.lookFor(job);
-					jobsList.getInternalJobInfoList(cacheMissClass).add(jobInfo);
-					jobsList.getInternalJobInfoList(originalClass).remove(jobInfo);
-					// in node jobs list
-					JobInfo nodeJobInfo = nodeJobsList.lookFor(job);
-					nodeJobsList.getInternalJobInfoList(cacheMissClass).add(nodeJobInfo);
-					nodeJobsList.getInternalJobInfoList(originalClass).remove(nodeJobInfo);
-					// in global jobs list
-					if (!(job instanceof ForkJob)) {
-						GlobalJobInfoList global = getOwnerNode().getQueueNet().getJobInfoList();
-						global.performJobClassSwitch(originalClass, cacheMissClass);
-					}
+					// switch the job from old section/node/global job info list to the miss class job list
+					switchJobList(job, originalClass, missClass);
 				}
 				sendForward(NetEvent.EVENT_JOB, job, 0.0);
 				sendBackward(NetEvent.EVENT_ACK, job, 0.0);
@@ -216,6 +211,23 @@ public class Cache extends ServiceSection {
 
 	private boolean cacheContains(int id){
 		return getItemById(this.caches, id) != null;
+	}
+
+	private void switchJobList(Job job, JobClass fromClass, JobClass toClass){
+		// switch the class, in section jobs list
+		job.setJobClass(toClass);
+		JobInfo jobInfo = jobsList.lookFor(job);
+		jobsList.getInternalJobInfoList(toClass).add(jobInfo);
+		jobsList.getInternalJobInfoList(fromClass).remove(jobInfo);
+		// in node jobs list
+		JobInfo nodeJobInfo = nodeJobsList.lookFor(job);
+		nodeJobsList.getInternalJobInfoList(toClass).add(nodeJobInfo);
+		nodeJobsList.getInternalJobInfoList(fromClass).remove(nodeJobInfo);
+		// in global jobs list
+		if (!(job instanceof ForkJob)) {
+			GlobalJobInfoList global = getOwnerNode().getQueueNet().getJobInfoList();
+			global.performJobClassSwitch(fromClass, toClass);
+		}
 	}
 
 	/**********************************************************

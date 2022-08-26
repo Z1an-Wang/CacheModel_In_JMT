@@ -311,7 +311,6 @@ public class Simulation {
 			for (JobClass classe : classes) {
 				network.addJobClass(classe);
 			}
-			network.checkAndConnectJobClass();
 
 			//creates all nodes
 			NetNode[] netNodes = new NetNode[nodes.size()];
@@ -559,6 +558,9 @@ public class Simulation {
 						break;
 					case SimConstants.CACHE_HIT_RATE:
 						netNodes[nodePosition].getSection(NodeSection.SERVICE).analyze(SimConstants.CACHE_HIT_RATE, jClass, ms.getMeasure());
+						break;
+					case SimConstants.CACHE_MISS_RATE:
+						netNodes[nodePosition].getSection(NodeSection.SERVICE).analyze(SimConstants.CACHE_MISS_RATE, jClass, ms.getMeasure());
 						break;
 					}
 				}

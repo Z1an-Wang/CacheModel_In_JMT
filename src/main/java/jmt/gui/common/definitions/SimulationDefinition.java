@@ -76,6 +76,7 @@ public interface SimulationDefinition {
 	/**Code for number of busy servers measure */
 	//public static final String MEASURE_BS = "Number of Busy Servers";
 	public static final String MEASURE_CHR = "Cache Hit Rate";
+	public static final String MEASURE_CMR = "Cache Miss Rate";
 
 
 	/**Code for number of system retrial number measure*/

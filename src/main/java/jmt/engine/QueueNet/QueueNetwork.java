@@ -132,24 +132,24 @@ public class QueueNetwork {
 		jobClass.setId(jobClasses.indexOf(jobClass));
 	}
 
-	public void checkAndConnectJobClass() throws CachePairClassNotMatchException{
-		for(int i=0 ; i< jobClasses.size(); i++){
-			if(jobClasses.get(i).isHasCachePair()){
-				// Check whether the cache class has its pair.
-				String selfName = jobClasses.get(i).getName();
-				String pairName = jobClasses.get(i).getCachePairClassName();
-				if(!jobClasses.get(pairName).getCachePairClassName().equals(selfName)){
-					throw new CachePairClassNotMatchException("The Cache Pair Class Not Match in "+selfName+" and its pair class " + pairName );
-				}
-
-				// connect to its pair class.
-				if (jobClasses.get(selfName).getCachePairClass() == null){
-					jobClasses.get(selfName).setCachePairClass(jobClasses.get(pairName));
-					jobClasses.get(pairName).setCachePairClass(jobClasses.get(selfName));
-				}
-			}
-		}
-	}
+//	public void checkAndConnectJobClass() throws CachePairClassNotMatchException{
+//		for(int i=0 ; i< jobClasses.size(); i++){
+//			if(jobClasses.get(i).isHasCachePair()){
+//				// Check whether the cache class has its pair.
+//				String selfName = jobClasses.get(i).getName();
+//				String pairName = jobClasses.get(i).getCachePairClassName();
+//				if(!jobClasses.get(pairName).getCachePairClassName().equals(selfName)){
+//					throw new CachePairClassNotMatchException("The Cache Pair Class Not Match in "+selfName+" and its pair class " + pairName );
+//				}
+//
+//				// connect to its pair class.
+//				if (jobClasses.get(selfName).getCachePairClass() == null){
+//					jobClasses.get(selfName).setCachePairClass(jobClasses.get(pairName));
+//					jobClasses.get(pairName).setCachePairClass(jobClasses.get(selfName));
+//				}
+//			}
+//		}
+//	}
 
 	/**
 	 * Gets the list of the queue network nodes.

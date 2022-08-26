@@ -118,6 +118,8 @@ public interface SimConstants {
 
 	public static final int CACHE_HIT_RATE = 41;
 
+	public static final int CACHE_MISS_RATE = 43;
+
 	//-------------------- end SIMULATION MEASURE IDENTIFIERS -------------------------//
 
 	//-------------------- JOB LIST MEASURE IDENTIFIERS ----------------------------//
@@ -155,6 +157,8 @@ public interface SimConstants {
 	public static final int LIST_BUSY_SERVERS = 40;
 
 	public static final int LIST_CACHE_HIT_RATE = 42;
+
+	public static final int LIST_CACHE_MISS_RATE = 44;
 
 	//-------------------- end JOB LIST MEASURE IDENTIFIERS -------------------------//
 

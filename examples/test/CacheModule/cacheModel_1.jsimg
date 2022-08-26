@@ -2,8 +2,10 @@
 <archive xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="cacheModel_1.jsimg" timestamp="Mon Jul 11 03:11:49 BST 2022" xsi:noNamespaceSchemaLocation="Archive.xsd">
 <sim disableStatisticStop="true" logDecimalSeparator="." logDelimiter="," logPath="/Users/prince_an/JMT/" logReplaceMode="0" maxEvents="-1" maxSamples="1000000" name="cacheModel_1.jsimg" polling="1.0" xsi:noNamespaceSchemaLocation="SIMmodeldefinition.xsd">
 
-<userClass name="Class1" priority="0" referenceSource="Source 1" cacheMissClass="Cache Miss" type="open"/>
-<userClass name="Cache Miss" priority="0" referenceSource="Cache 1" cacheHitClass="Class1" type="open"/>
+<userClass name="Class1" priority="0" referenceSource="Source 1" type="open"/>
+<userClass name="Cache Miss" priority="0" referenceSource="Cache 1" type="open"/>
+<userClass name="Cache Hit" priority="0" referenceSource="Cache 1" type="open"/>
+
 
 <node name="Sink 1">
     <section className="JobSink"/>
@@ -27,6 +29,10 @@
         <subParameter classPath="jmt.engine.NetStrategies.ServiceStrategies.ServiceTimeStrategy" name="ServiceTimeStrategy">
             <value>null</value>
         </subParameter>
+        <refClass>Cache Hit</refClass>
+        <subParameter classPath="jmt.engine.NetStrategies.ServiceStrategies.ServiceTimeStrategy" name="ServiceTimeStrategy">
+            <value>null</value>
+        </subParameter>
     </parameter>
     </section>
 
@@ -37,6 +43,8 @@
         <refClass>Class1</refClass>
         <subParameter classPath="jmt.engine.NetStrategies.RoutingStrategies.RandomStrategy" name="Random"/>
         <refClass>Cache Miss</refClass>
+        <subParameter classPath="jmt.engine.NetStrategies.RoutingStrategies.RandomStrategy" name="Random"/>
+        <refClass>Cache Hit</refClass>
         <subParameter classPath="jmt.engine.NetStrategies.RoutingStrategies.RandomStrategy" name="Random"/>
         </parameter>
     </section>
@@ -58,6 +66,10 @@
             <subParameter classPath="java.lang.String" name="dropStrategy">
             <value>drop</value>
             </subParameter>
+            <refClass>Cache Hit</refClass>
+            <subParameter classPath="java.lang.String" name="dropStrategy">
+            <value>drop</value>
+            </subParameter>
         </parameter>
 
         <parameter array="true" classPath="jmt.engine.NetStrategies.ServiceStrategy" name="retrialDistributions"/>
@@ -69,6 +81,8 @@
             <subParameter classPath="jmt.engine.NetStrategies.QueuePutStrategies.TailStrategy" name="TailStrategy"/>
             <refClass>Cache Miss</refClass>
             <subParameter classPath="jmt.engine.NetStrategies.QueuePutStrategies.TailStrategy" name="TailStrategy"/>
+            <refClass>Cache Hit</refClass>
+            <subParameter classPath="jmt.engine.NetStrategies.QueuePutStrategies.TailStrategy" name="TailStrategy"/>
         </parameter>
 
         <parameter array="true" classPath="jmt.engine.NetStrategies.ImpatienceStrategies.Impatience" name="Impatience">
@@ -77,6 +91,10 @@
             <value>null</value>
             </subParameter>
             <refClass>Cache Miss</refClass>
+            <subParameter classPath="jmt.engine.NetStrategies.ImpatienceStrategies.Impatience" name="Impatience">
+            <value>null</value>
+            </subParameter>
+            <refClass>Cache Hit</refClass>
             <subParameter classPath="jmt.engine.NetStrategies.ImpatienceStrategies.Impatience" name="Impatience">
             <value>null</value>
             </subParameter>
@@ -94,9 +112,17 @@
             <value>100</value>
         </parameter>
 
+        <parameter classPath="java.lang.String" name="cacheCapacity">
+            <value>Cache Hit</value>
+        </parameter>
 
-        <parameter classPath="jmt.engine.NetStrategies.CacheStrategies.RandomCache" name="replacePolicy"/>
-        <!-- <parameter classPath="jmt.engine.NetStrategies.CacheStrategies.FIFOCache" name="replacePolicy"/> -->
+        <parameter classPath="java.lang.String" name="cacheCapacity">
+            <value>Cache Miss</value>
+        </parameter>
+
+
+        <!-- <parameter classPath="jmt.engine.NetStrategies.CacheStrategies.RandomCache" name="replacePolicy"/> -->
+        <parameter classPath="jmt.engine.NetStrategies.CacheStrategies.FIFOCache" name="replacePolicy"/>
         <!-- <parameter classPath="jmt.engine.NetStrategies.CacheStrategies.LRUCache" name="replacePolicy"/> -->
         <!-- <parameter classPath="jmt.engine.NetStrategies.CacheStrategies.LFUCache" name="replacePolicy"/> -->
         <!-- <parameter classPath="jmt.engine.NetStrategies.CacheStrategies.TTLCache" name="replacePolicy">
@@ -132,6 +158,10 @@
                 <value>null</value>
             </subParameter>
 
+            <refClass>Cache Hit</refClass>
+            <subParameter classPath="jmt.engine.random.discrete.DiscreteDistribution" name="popularity">
+                <value>null</value>
+            </subParameter>
         </parameter>
     </section>
 
@@ -141,12 +171,15 @@
             <subParameter classPath="jmt.engine.NetStrategies.RoutingStrategies.RandomStrategy" name="Random"/>
             <refClass>Cache Miss</refClass>
             <subParameter classPath="jmt.engine.NetStrategies.RoutingStrategies.RandomStrategy" name="Random"/>
+            <refClass>Cache Hit</refClass>
+            <subParameter classPath="jmt.engine.NetStrategies.RoutingStrategies.RandomStrategy" name="Random"/>
         </parameter>
     </section>
 </node>
 
 <measure alpha="0.01" name="Class1_System Response Time" nodeType="" precision="0.03" referenceNode="" referenceUserClass="Class1" type="System Response Time" verbose="false"/>
 <measure alpha="0.01" name="Class1_Cache Hit Rate" nodeType="section" precision="0.03" referenceNode="Cache 1" referenceUserClass="Class 1" type="Cache Hit Rate" verbose="false"/>
+<measure alpha="0.01" name="Class1_Cache Miss Rate" nodeType="section" precision="0.03" referenceNode="Cache 1" referenceUserClass="Class 1" type="Cache Miss Rate" verbose="false"/>
 
 <connection source="Source 1" target="Cache 1"/>
 <connection source="Cache 1" target="Sink 1"/>
