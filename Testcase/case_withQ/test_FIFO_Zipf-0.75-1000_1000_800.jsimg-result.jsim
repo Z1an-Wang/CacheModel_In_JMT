@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<solutions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" logDecimalSeparator="." logDelimiter="," logPath="/Users/prince_an/JMT/" modelDefinitionPath="." modelName="template.jsimg" solutionMethod="simulation" xsi:noNamespaceSchemaLocation="SIMmodeloutput.xsd">
+    <measure alfa="0.01" analyzedSamples="117343" class="Class 1" discardedSamples="76030" lowerLimit="0.8775275777794066" maxSamples="1000000" meanValue="0.888649956728296" measureType="Cache Hit Rate" nodeType="station" precision="0.03" station="Cache 1" successful="true" upperLimit="0.8997723356771855"/>
+</solutions>
