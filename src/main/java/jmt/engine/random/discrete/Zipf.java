@@ -3,7 +3,7 @@ package jmt.engine.random.discrete;
 import jmt.common.exception.IncorrectDistributionParameterException;
 import jmt.engine.random.Parameter;
 
-import java.util.ArrayList;
+import java.util.Hashtable;
 
 public class Zipf extends DiscreteDistribution {
 
@@ -163,7 +163,7 @@ public class Zipf extends DiscreteDistribution {
 			int max = up.getNumberOfElements();
 
 			// the Parameter p is used to call `cdf(int x, Parameter p)`
-			ArrayList<Double> cdf_array = createdCDFList(0, max, p);
+			Hashtable<Integer,Double> cdf_array = createdCDFList(0, max, p);
 			return binarySearch(0, max, engine.nextDouble(), cdf_array);
 		} else {
 			throw new IncorrectDistributionParameterException(
@@ -256,68 +256,5 @@ public class Zipf extends DiscreteDistribution {
 		}
 		return total;
 	}
-
-
-	// The Zipf distribution generator from apache math4.
-//	private int getRandVar(int max, double alpha){
-//		double hIntegral_x = hIntegral(1.5, alpha) - 1.0;
-//		double hIntegral_max = hIntegral(max + 0.5, alpha);
-//		double s = 2.0 - hIntegralInverse(hIntegral(2.5, alpha) - h(2, alpha), alpha);
-//
-//		while (true) {
-//			// u is uniformly distributed in (hIntegralX1, hIntegralNumberOfElements]
-//			double u = hIntegral_max
-//					+ engine.nextDouble() * (hIntegral_x - hIntegral_max);
-//
-//			double x = hIntegralInverse(u, alpha);
-//
-//			int k = (int) (x + 0.5);
-//
-//			// Limit k to the range [1, numberOfElements]
-//			if (k < 1) {
-//				k = 1;
-//			} else if (k > max) {
-//				k = max;
-//			}
-//
-//			if (k - x <= s || u >= hIntegral(k + 0.5, alpha) - h(k, alpha)) {
-//				return k;
-//			}
-//		}
-//	}
-//
-//	private static double h(double x, double alpha) {
-//		return Math.exp(-alpha * Math.log(x));
-//	}
-//
-//	private static double hIntegral(double x, double alpha) {
-//		double logX = Math.log(x);
-//		return func2((1.0 - alpha) * logX) * logX;
-//	}
-//
-//	private static double hIntegralInverse(double x, double alpha) {
-//		double t = x * (1.0 - alpha);
-//		// t should in range [-1, +inf).
-//		if (t < -1.0) { t = -1; }
-//		return Math.exp(func1(t) * x);
-//	}
-//
-//	// A Taylor series expansion is used, if x is close to 0.
-//	private static double func1(double x) {
-//		if (Math.abs(x) > 1e-8) {
-//			return Math.log1p(x) / x;
-//		} else {
-//			return 1.0 - x * ((1.0 / 2.0) - x * ((1.0 / 3.0) - x * (1.0 / 4.0)));
-//		}
-//	}
-//
-//	// A Taylor series expansion is used, if x is close to 0.
-//	private static double func2(double x) {
-//		if (Math.abs(x) > 1e-8) {
-//			return Math.expm1(x) / x;
-//		} else {
-//			return 1.0 + x * (1.0 / 2.0) * (1.0 + x * (1.0 / 3.0) * (1.0 + x * (1.0 / 4.0)));
-//		}
-//	}
 }
 

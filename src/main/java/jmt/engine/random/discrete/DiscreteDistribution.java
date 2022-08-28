@@ -4,7 +4,7 @@ import jmt.common.exception.IncorrectDistributionParameterException;
 import jmt.engine.random.AbstractDistribution;
 import jmt.engine.random.Parameter;
 
-import java.util.ArrayList;
+import java.util.Hashtable;
 
 public abstract class DiscreteDistribution extends AbstractDistribution{
 
@@ -16,7 +16,7 @@ public abstract class DiscreteDistribution extends AbstractDistribution{
 	*/
 
 	protected boolean cached;
-	protected ArrayList<Double> CDFList;
+	protected Hashtable<Integer,Double> CDFList;
 	protected boolean CDFListCalculated;
 
 	public DiscreteDistribution(){
@@ -66,29 +66,30 @@ public abstract class DiscreteDistribution extends AbstractDistribution{
 	/**
 	 * Calculate the cumulative distribution value for each discrete random variable.
 	 * It depends on the `cdf()` implementation from its subclass.
+	 * result include lower and upper [lower, upper]
 	 */
-	protected ArrayList<Double> createdCDFList(int lower, int upper){
+	protected Hashtable<Integer,Double> createdCDFList(int lower, int upper){
 		if(cached){
-			ArrayList<Double> lst = new ArrayList<Double>(upper-lower+1);
+			Hashtable<Integer, Double> hmap = new Hashtable<>();
 			for(int i=lower; i<=upper; i++){
-				lst.add(i, (Double) this.cdf(i));
+				hmap.put((Integer) i, (Double) this.cdf(i));
 			}
-			return lst;
+			return hmap;
 		}
 		return null;
 	}
 
-	protected ArrayList<Double> createdCDFList(int lower, int upper, Parameter p) throws IncorrectDistributionParameterException {
-		ArrayList<Double> lst = new ArrayList<Double>(upper-lower+1);
+	protected Hashtable<Integer,Double> createdCDFList(int lower, int upper, Parameter p) throws IncorrectDistributionParameterException {
+		Hashtable<Integer, Double> hmap = new Hashtable<>();
 		for(int i=lower; i<=upper; i++){
-			lst.add(i, (Double) this.cdf(i, p));
+			hmap.put((Integer) i, (Double) this.cdf(i, p));
 		}
-		return lst;
+		return hmap;
 	}
 
 	// The index returned is rounded up.
 	// Both lower and upper are included
-	protected static int binarySearch(final int lower, final int upper, final double probability, final ArrayList<Double> CDF_List){
+	protected static int binarySearch(final int lower, final int upper, final double probability, final Hashtable<Integer,Double> CDF_List){
 		if(probability<=CDF_List.get(lower)){
 			return lower;
 		} else {

@@ -4,7 +4,7 @@ import jmt.common.exception.IncorrectDistributionParameterException;
 import jmt.engine.math.Arithmetic;
 import jmt.engine.random.Parameter;
 
-import java.util.ArrayList;
+import java.util.Hashtable;
 
 public class Binomial extends DiscreteDistribution {
 
@@ -21,7 +21,6 @@ public class Binomial extends DiscreteDistribution {
 		if (p<0 || p>1) {
 			throw new IncorrectDistributionParameterException("`probability` should be in range [0, 1]");
 		}
-
 		outdated();		// Set all cache flag false;
 		this.p = p;
 		this.n = n;
@@ -43,12 +42,10 @@ public class Binomial extends DiscreteDistribution {
 		if (p<0 || p>1) {
 			throw new IncorrectDistributionParameterException("`probability` should be in range [0, 1]");
 		}
-
 		outdated();		// Set all cache flag false;
 		this.p = p;
 		this.n = n;
 		this.cached = true;
-
 		return true;
 	}
 
@@ -76,35 +73,11 @@ public class Binomial extends DiscreteDistribution {
 		return -1;
 	}
 
-	/**
-	 *	Cause we can calculate each CDF through one iteration, override it.
-	 */
-	@Override
-	protected ArrayList<Double> createdCDFList(int lower, int upper) {
-		if(cached){
-			ArrayList<Double> lst = new ArrayList<Double>(upper-lower+1);
-			double CDF = 0.0;
-			for(int i=lower; i<=upper; i++){
-				CDF += binomial_pmf(n, i, p);
-				lst.add(i, CDF);
-			}
-			return lst;
-		}
-		return null;
-	}
-
 	@Override
 	// Because the input is number of items, and the input of Binomial distribution is number of experiments.
 	// when nextRand() called, we need to the next item's id, so plus 1.
 	public int nextRand() {
-		if(cached){
-			if(!CDFListCalculated){
-				this.CDFList = createdCDFList(0, n);
-				this.CDFListCalculated = true;
-			}
-			return binarySearch(0, n, engine.nextDouble(), this.CDFList)+1;
-		}
-		return -1;
+		return inverseTransformSampling(0, n)+1;
 	}
 
 	@Override
@@ -160,11 +133,11 @@ public class Binomial extends DiscreteDistribution {
 			int num = up.getNumberOfExperiment();
 			double p = up.getProbability();
 
-			ArrayList<Double> lst = new ArrayList<Double>(num+1);
+			Hashtable<Integer,Double> lst = new Hashtable<Integer,Double>();
 			double CDF = 0.0;
 			for(int i=0; i<=num; i++){
 				CDF += binomial_pmf(num, i, p);
-				lst.add(i, CDF);
+				lst.put(i, CDF);
 			}
 			return binarySearch(0, num, engine.nextDouble(), lst)+1;
 		} else {
