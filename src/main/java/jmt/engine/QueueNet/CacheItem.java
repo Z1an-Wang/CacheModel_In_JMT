@@ -7,6 +7,7 @@ public class CacheItem {
 	private int id;
 
 	private LinkedList<Double> accessTimes;
+	private int cumulateAccessCount;
 
 	// Time to alive
 	private double ttl;
@@ -15,6 +16,8 @@ public class CacheItem {
 
 	public CacheItem(int id) {
 		this.accessTimes = new LinkedList<Double>();
+		this.isCached = false;
+		this.cumulateAccessCount = 0;
 		this.id = id;
 		this.ttl = -1;
 	}
@@ -27,12 +30,24 @@ public class CacheItem {
 //		this.id = id;
 //	}
 
+	public LinkedList<Double> getAccessTimes() {
+		return accessTimes;
+	}
+
 	public double getFirstAccessTime() {
 		return accessTimes.getFirst();
 	}
 
 	public double getLastAccessTime() {
 		return accessTimes.getLast();
+	}
+
+	public int getNumberOfAccess() {
+		return accessTimes.size();
+	}
+
+	public int getCumulateAccessCount(){
+		return cumulateAccessCount;
 	}
 
 	public boolean isCached() {
@@ -43,18 +58,13 @@ public class CacheItem {
 		isCached = cached;
 	}
 
-	public int getNumberOfAccess() {
-		return accessTimes.size();
-	}
-
-	public LinkedList<Double> getAccessTimes() {
-		return accessTimes;
-	}
-
 	public void access(double time) {
 		if(!isCached){
+			// for the first time enter the cache, clean the list.
+			this.accessTimes.clear();
 			setCached(true);
 		}
+		this.cumulateAccessCount++;
 		this.accessTimes.addLast(time);
 	}
 
