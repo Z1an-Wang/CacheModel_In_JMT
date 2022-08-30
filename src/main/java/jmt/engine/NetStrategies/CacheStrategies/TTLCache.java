@@ -22,7 +22,24 @@ public class TTLCache extends CacheStrategy {
 	 */
 	@Override
 	public CacheItem getRemoveItem(LinkedList<CacheItem> caches) {
-		return replacePolicy.getRemoveItem(caches);
+		if (replacePolicy != null) {
+			return replacePolicy.getRemoveItem(caches);
+		}
+		else{
+			int likelyExpireItem = -1;
+			double leastExpireTime = Double.MAX_VALUE;
+			for(int i=0; i<caches.size(); i++){
+				CacheItem c = caches.get(i);
+				double expireTime = c.getLastAccessTime()+c.getTTL() - netSystem.getTime();
+				if(expireTime < leastExpireTime){
+					likelyExpireItem = i;
+				}
+				else if( expireTime == leastExpireTime){
+					likelyExpireItem = engine.raw2() >= 0.5 ? likelyExpireItem: i;
+				}
+			}
+			return caches.get(likelyExpireItem);
+		}
 	}
 
 	/**
