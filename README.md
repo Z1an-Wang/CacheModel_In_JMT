@@ -1,5 +1,6 @@
 # Please Note! Download the kit in the [Official Website](https://jmt.sourceforge.net/)
 
+# This is only used for the final project - add cache module in the JMT
 
 Java Modelling Tools 
 ====================

@@ -12,7 +12,7 @@ INITIAL_CACHE_ITEM = 10
 DIS_PARA_1 = 1.0
 DIS_PARA_2 = 10
 
-JSIM_ROOT = '/Users/prince_an/JMT/examples/template/'
+JSIM_ROOT = '/Users/prince_an/JMT/examples/test_jsim/case/'
 XML_FILE = 'template.jsimg'
 # XML_FILE = 'template_withQ.jsimg'
 CSV_FILE = './result.csv'
@@ -226,44 +226,57 @@ with open(CSV_FILE, 'w', encoding='utf-8', newline='') as csvFile:
     writer.writerow(["Distribution", "ttl", "DisParameter 1", "DisParameter 2",
                     "Replacement Policy", "NumberOfItems", "CacheCapacity", "Lower", "Mean", "Upper"])
 
-
+## For each set of case, it may need 10 ~ 15 min to execute
 ## case 1
-# for alpha in (0.5, 0.75, 1, 1.5, 2):
-#     tree0 = changePopularity(ZIPF_DIS, alpha, 1000, changeSourceDis(2.0))
+for alpha in (0.5, 0.75, 1, 1.5):
+    numOfItems = 1000
+    tree0 = changePopularity(ZIPF_DIS, alpha, numOfItems, changeSourceDis(2.0))
 
-#     for (strategy, name) in [(RANDOM_CACHE_STRATEGY, RR), (FIFO_CACHE_STRATEGY, FIFO), (LRU_CACHE_STRATEGY, LRU), (LFU_CACHE_STRATEGY, LFU)]:
-#         tree1 = changeCacheStrategy(strategy, tree0)
+    for (strategy, name) in [(RANDOM_CACHE_STRATEGY, RR), (FIFO_CACHE_STRATEGY, FIFO), (LRU_CACHE_STRATEGY, LRU), (LFU_CACHE_STRATEGY, LFU)]:
+        tree1 = changeCacheStrategy(strategy, tree0)
 
-#         for Capacity in range(100, 1000, 100):
-#             numOfItems = 1000
-#             tree = changeNumOfItems_Capacity(numOfItems, Capacity, tree1)
+        for Capacity in range(100, numOfItems, 100):
+            tree = changeNumOfItems_Capacity(numOfItems, Capacity, tree1)
 
-#             writeExecute(tree, strategy=name, pop=ZIPF, a=alpha, b=1000,
-#                             numOfItems=numOfItems, cacheCapacity=Capacity)
+            writeExecute(tree, strategy=name, pop=ZIPF, a=alpha, b=numOfItems,
+                            numOfItems=numOfItems, cacheCapacity=Capacity)
 
 
 ## case 2
-# for ttl_value in range(5, 705, 50):
-#     tree0 = changePopularity(ZIPF_DIS, 1.0, 1000, changeSourceDis(2.0))
-#     tree1 = changeCacheStrategy(
-#         TTL_CACHE_STRATEGY, ttl_name=LRU_CACHE_STRATEGY, ttl_value=ttl_value, tree=tree0)
+for ttl_value in range(5, 705, 50):
+    numOfItems = 1000
+    tree0 = changePopularity(ZIPF_DIS, 1.0, numOfItems, changeSourceDis(2.0))
+    tree1 = changeCacheStrategy(
+        TTL_CACHE_STRATEGY, ttl_name=LRU_CACHE_STRATEGY, ttl_value=ttl_value, tree=tree0)
 
-#     for Capacity in range(100, 500, 50):
-#         numOfItems = 1000
-#         tree = changeNumOfItems_Capacity(numOfItems, Capacity, tree1)
+    for Capacity in range(100, 500, 50):
+        tree = changeNumOfItems_Capacity(numOfItems, Capacity, tree1)
 
-#         writeExecute(tree, strategy=TTL, pop=ZIPF, a=1.0, b=1000,
-#                      numOfItems=numOfItems, cacheCapacity=Capacity, ttl=ttl_value)
+        writeExecute(tree, strategy=TTL, pop=ZIPF, a=1.0, b=numOfItems,
+                     numOfItems=numOfItems, cacheCapacity=Capacity, ttl=ttl_value)
 
-## case 3
+## Case 3
 for (strategy, name) in [(RANDOM_CACHE_STRATEGY, RR), (FIFO_CACHE_STRATEGY, FIFO), (LRU_CACHE_STRATEGY, LRU), (LFU_CACHE_STRATEGY, LFU)]:
     tree1 = changeCacheStrategy(strategy, changeSourceDis(2.0))
 
     numOfItems = 1000
     tree2 = changeNumOfItems_Capacity(numOfItems, 400, tree1)
 
-
     for alpha in range(2, 22, 2):
         tree = changePopularity(ZIPF_DIS, alpha/10, 1000, tree2)
         writeExecute(tree, strategy=name, pop=ZIPF, a=alpha/10, b=1000,
                             numOfItems=numOfItems, cacheCapacity=400)
+
+
+## Case Verify 2
+for (strategy, name) in [(LFU_CACHE_STRATEGY, LFU), (LRU_CACHE_STRATEGY, LRU)]:
+    tree1 = changeCacheStrategy(strategy, changeSourceDis(2.0))
+
+    numOfItems = 10000
+    for Capacity in [30, 50, 100, 200, 300, 400, 500]:
+        tree2 = changeNumOfItems_Capacity(numOfItems, Capacity, tree1)
+
+        for alpha in [0.75, 1.0]:
+            tree = changePopularity(ZIPF_DIS, alpha, numOfItems, tree2)
+            writeExecute(tree, strategy=name, pop=ZIPF, a=alpha, b=numOfItems,
+                            numOfItems=numOfItems, cacheCapacity=Capacity)
